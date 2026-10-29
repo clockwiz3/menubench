@@ -14,7 +14,9 @@ from jinja2 import Environment, PackageLoader, StrictUndefined
 from PIL import Image
 
 from menubench.schema import (
+    AugmentLevel,
     BBox,
+    CatalogEntry,
     MenuAnnotation,
     MenuItem,
     Page,
@@ -23,10 +25,12 @@ from menubench.schema import (
     TextLine,
     TextRole,
 )
+from menubench.synth.augment import augment
+from menubench.synth.catalog import make_catalog
 from menubench.synth.content import ContentOptions, MenuContent, generate_content
 from menubench.synth.render import Box, Rendered, Renderer
 
-GENERATOR_VERSION = "1"
+GENERATOR_VERSION = "2"
 
 FONTS = (
     "Georgia, serif",
@@ -94,10 +98,57 @@ def _table_theme(rng: random.Random) -> dict[str, Any]:
     return theme
 
 
+def _chalk_theme(rng: random.Random) -> dict[str, Any]:
+    width = rng.choice((900, 1200))
+    theme = _common_theme(rng, width)
+    theme.update(
+        bg=rng.choice(("#2f3b33", "#1f2421", "#262626")),
+        fg="#f2f0e6",
+        accent=rng.choice(("#ffd36b", "#f6a6a6", "#9fe3c4")),
+        muted="#b9b6aa",
+        font=rng.choice(("'Segoe Print', cursive", "'Ink Free', cursive", "'Comic Sans MS', cursive")),
+        columns=2 if width >= 1200 else 1,
+    )
+    theme["title_font"] = theme["font"]
+    return theme
+
+
+def _price_left_theme(rng: random.Random) -> dict[str, Any]:
+    theme = _common_theme(rng, rng.choice((800, 1000)))
+    theme["price_col"] = rng.choice((5, 6, 7))
+    return theme
+
+
+def _tv_theme(rng: random.Random) -> dict[str, Any]:
+    theme = _common_theme(rng, 1920)
+    bg, fg, accent, muted = rng.choice(PALETTES[2:5])
+    theme.update(bg=bg, fg=fg, accent=accent, muted=muted, size=rng.randint(24, 30), columns=rng.choice((3, 4)))
+    return theme
+
+
+def _narrow_theme(rng: random.Random) -> dict[str, Any]:
+    theme = _common_theme(rng, rng.choice((560, 640)))
+    theme["size"] = rng.randint(15, 18)
+    return theme
+
+
 TEMPLATES: dict[str, TemplateSpec] = {
     "classic_columns": TemplateSpec("classic_columns", _classic_theme),
     "cards_grid": TemplateSpec("cards_grid", _cards_theme),
     "sizes_table": TemplateSpec("sizes_table", _table_theme),
+    "chalkboard": TemplateSpec("chalkboard", _chalk_theme),
+    "narrow_stand": TemplateSpec("narrow_stand", _narrow_theme),
+    "price_left": TemplateSpec("price_left", _price_left_theme),
+    "tv_landscape": TemplateSpec("tv_landscape", _tv_theme),
+}
+# Layouts the pipeline never sees during development: the test split checks transfer to unseen designs.
+TEST_ONLY_TEMPLATES = ("price_left", "tv_landscape")
+
+V1_CONTENT: dict[str, Any] = {
+    "description_rate": 0.45,
+    "long_description_rate": 0.15,
+    "weight_rate": 0.25,
+    "hard_cases": {"crossed": 0.06, "from": 0.04, "range": 0.03},
 }
 
 _ROLES = {role.value: role for role in TextRole}
@@ -113,36 +164,59 @@ _env = Environment(
 
 @dataclass
 class SynthConfig:
-    n: int = 50
+    n: int = 300
     seed: int = 42
     langs: tuple[str, ...] = ("ru", "en")
     templates: tuple[str, ...] = tuple(TEMPLATES)
+    test_only: tuple[str, ...] = TEST_ONLY_TEMPLATES
     dev_fraction: float = 0.3
-    content: dict[str, Any] = field(default_factory=dict)  # extra ContentOptions fields
+    augment: dict[str, float] = field(default_factory=lambda: {"clean": 0.3, "scan": 0.35, "photo": 0.35})
+    content: dict[str, Any] = field(default_factory=lambda: dict(V1_CONTENT))  # extra ContentOptions fields
+    catalog: bool = True
 
 
 @dataclass(frozen=True)
 class SynthMenu:
     annotation: MenuAnnotation
-    png: bytes
+    png: bytes  # image bytes; PNG for clean renders, JPEG after augmentation
     html: str
+    ext: str = "png"
 
 
 def render_html(content: MenuContent, template: str, theme: dict[str, Any]) -> str:
     return _env.get_template(f"{template}.html.j2").render(menu=content, theme=theme)
 
 
-def build_menu(renderer: Renderer, menu_id: str, seed: int, lang: str, template: str, **content_opts: Any) -> SynthMenu:
+def build_menu(
+    renderer: Renderer,
+    menu_id: str,
+    seed: int,
+    lang: str,
+    template: str,
+    augment_level: AugmentLevel = AugmentLevel.CLEAN,
+    with_catalog: bool = False,
+    **content_opts: Any,
+) -> SynthMenu:
     rng = random.Random(seed)
     content, _style = generate_content(rng, ContentOptions(lang=lang, **content_opts))
     theme = TEMPLATES[template].theme(rng)
     html = render_html(content, template, theme)
     rendered = renderer.render(html, width=int(theme["width"]))
-    annotation = to_annotation(menu_id, seed, template, content, rendered)
-    return SynthMenu(annotation=annotation, png=rendered.png, html=html)
+    catalog, mapping = make_catalog(content, rng) if with_catalog else ((), {})
+    annotation = to_annotation(menu_id, seed, template, content, rendered, catalog, mapping)
+    image, ext, annotation = augment(rendered.png, annotation, augment_level, rng)
+    return SynthMenu(annotation=annotation, png=image, html=html, ext=ext)
 
 
-def to_annotation(menu_id: str, seed: int, template: str, content: MenuContent, rendered: Rendered) -> MenuAnnotation:
+def to_annotation(
+    menu_id: str,
+    seed: int,
+    template: str,
+    content: MenuContent,
+    rendered: Rendered,
+    catalog: tuple[CatalogEntry, ...] = (),
+    mapping: dict[str, str | None] | None = None,
+) -> MenuAnnotation:
     with Image.open(io.BytesIO(rendered.png)) as img:
         width, height = img.size
 
@@ -167,9 +241,10 @@ def to_annotation(menu_id: str, seed: int, template: str, content: MenuContent, 
                     bbox=bbox(item_el.box),
                     section=section.title,
                     description=spec.description,
+                    catalog_id=(mapping or {}).get(spec.id),
                 )
             )
-            for price in spec.prices:
+            for price in [*spec.prices, *([spec.old_price] if spec.old_price else [])]:
                 price_el = by_id.get(("price", price.id))
                 if price_el is None:
                     raise RuntimeError(f"{menu_id}: price {price.id} was not rendered")
@@ -198,6 +273,7 @@ def to_annotation(menu_id: str, seed: int, template: str, content: MenuContent, 
         pages=(Page(index=0, width=width, height=height, image=f"{menu_id}/page-0.png"),),
         items=tuple(items),
         prices=tuple(prices),
+        catalog=catalog,
         lines=lines,
         template=template,
         seed=seed,
@@ -205,31 +281,77 @@ def to_annotation(menu_id: str, seed: int, template: str, content: MenuContent, 
     )
 
 
-def plan_menus(cfg: SynthConfig) -> Iterable[tuple[str, int, str, str, str]]:
-    """Yields (menu_id, seed, lang, template, split). Pure function of the config."""
+@dataclass(frozen=True)
+class MenuPlan:
+    menu_id: str
+    seed: int
+    lang: str
+    template: str
+    split: str
+    augment: AugmentLevel
+
+
+def plan_menus(cfg: SynthConfig) -> Iterable[MenuPlan]:
+    """Pure function of the config: same config, same dataset."""
     rng = random.Random(cfg.seed)
+    shared = [t for t in cfg.templates if t not in cfg.test_only]
+    levels = [AugmentLevel(k) for k in cfg.augment]
+    weights = list(cfg.augment.values())
+    counters = {"dev": 0, "test": 0}
     for i in range(cfg.n):
         menu_seed = rng.randrange(2**31)
-        lang = cfg.langs[i % len(cfg.langs)]
-        template = cfg.templates[(i // len(cfg.langs)) % len(cfg.templates)]
         split = "dev" if rng.random() < cfg.dev_fraction else "test"
-        yield f"syn-{cfg.seed}-{i:04d}", menu_seed, lang, template, split
+        pool = shared if split == "dev" else list(cfg.templates)
+        template = pool[counters[split] % len(pool)]
+        counters[split] += 1
+        yield MenuPlan(
+            menu_id=f"syn-{cfg.seed}-{i:04d}",
+            seed=menu_seed,
+            lang=cfg.langs[i % len(cfg.langs)],
+            template=template,
+            split=split,
+            augment=rng.choices(levels, weights)[0],
+        )
 
 
 def generate_dataset(out: Path, cfg: SynthConfig, on_menu: Callable[[str], None] | None = None) -> int:
     out.mkdir(parents=True, exist_ok=True)
     index: list[dict[str, Any]] = []
     with Renderer() as renderer:
-        for menu_id, seed, lang, template, split in plan_menus(cfg):
-            menu = build_menu(renderer, menu_id, seed, lang, template, **cfg.content)
-            menu_dir = out / menu_id
+        for plan in plan_menus(cfg):
+            menu = build_menu(
+                renderer,
+                plan.menu_id,
+                plan.seed,
+                plan.lang,
+                plan.template,
+                augment_level=plan.augment,
+                with_catalog=cfg.catalog,
+                **cfg.content,
+            )
+            menu_dir = out / plan.menu_id
             menu_dir.mkdir(exist_ok=True)
-            (menu_dir / "page-0.png").write_bytes(menu.png)
+            (menu_dir / f"page-0.{menu.ext}").write_bytes(menu.png)
             (menu_dir / "annotation.json").write_text(menu.annotation.model_dump_json(indent=1), encoding="utf-8")
-            index.append({"menu_id": menu_id, "split": split, "lang": lang, "template": template})
+            index.append(
+                {
+                    "menu_id": plan.menu_id,
+                    "split": plan.split,
+                    "lang": plan.lang,
+                    "template": plan.template,
+                    "augment": plan.augment.value,
+                }
+            )
             if on_menu:
-                on_menu(menu_id)
-    meta = {"generator_version": GENERATOR_VERSION, "seed": cfg.seed, "n": cfg.n, "templates": cfg.templates}
+                on_menu(plan.menu_id)
+    meta = {
+        "generator_version": GENERATOR_VERSION,
+        "seed": cfg.seed,
+        "n": cfg.n,
+        "templates": cfg.templates,
+        "test_only": cfg.test_only,
+        "augment": cfg.augment,
+    }
     (out / "dataset.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")
     with (out / "index.jsonl").open("w", encoding="utf-8") as f:
         for row in index:

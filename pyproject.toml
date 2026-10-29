@@ -43,7 +43,7 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 # Cyrillic is first-class in menus and fixtures
-ignore = ["RUF001", "RUF002", "RUF003", "SIM108"]
+ignore = ["RUF001", "RUF002", "RUF003", "SIM108", "SIM905"]
 
 [tool.mypy]
 python_version = "3.12"

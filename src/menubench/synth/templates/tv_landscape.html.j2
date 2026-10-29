@@ -1,0 +1,31 @@
+{% extends "_base.html.j2" %}
+{% import "_macros.html.j2" as m %}
+{% block style %}
+  .page { min-height: 1080px; }
+  .cols { display: grid; grid-template-columns: repeat({{ theme.columns }}, 1fr); gap: calc(var(--size) * 1.4); align-items: start; }
+  section { background: rgba(127,127,127,0.10); border-radius: 14px; padding: calc(var(--size) * 0.6) calc(var(--size) * 0.9) calc(var(--size) * 0.9); }
+  h2 { background: var(--accent); color: var(--bg); padding: 4px 12px; border-radius: 8px; display: inline-block; }
+  .row { display: flex; align-items: baseline; gap: 10px; margin-top: calc(var(--size) * 0.5); }
+  .grow { flex: 1 1 auto; }
+  .cell { flex: 0 0 auto; text-align: right; min-width: calc(var(--size) * 3.4); }
+  .heads { display: flex; justify-content: flex-end; gap: 10px; }
+  .heads .cell { text-align: right; }
+  .price { font-size: calc(var(--size) * 1.1); }
+{% endblock %}
+{% block body %}
+<div class="cols">
+  {% for s in menu.sections %}
+  <section>
+    <h2><span data-mb-kind="section">{{ s.title }}</span></h2>
+    {% if s.sizes %}<div class="heads">{% for label in s.sizes %}<span class="cell"><span class="size" data-mb-kind="size">{{ label }}</span></span>{% endfor %}</div>{% endif %}
+    {% for it in s.items %}
+    <div class="row">
+      <span class="grow">{{ m.item(it) }}{% if it.weight %} <span class="size">· <span data-mb-kind="other">{{ it.weight }}</span></span>{% endif %}</span>
+      {% for p in it.prices %}<span class="cell">{{ m.price(it, p, loop.first) }}</span>{% endfor %}
+    </div>
+    {% if it.description %}<div class="desc"><span data-mb-kind="description">{{ it.description }}</span></div>{% endif %}
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

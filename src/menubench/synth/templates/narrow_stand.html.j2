@@ -1,0 +1,27 @@
+{% extends "_base.html.j2" %}
+{% import "_macros.html.j2" as m %}
+{% block style %}
+  .entry { margin-top: calc(var(--size) * 0.7); }
+  .name { font-weight: 600; }
+  .bottom { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .bottom .prices { display: flex; gap: 12px; margin-left: auto; }
+  hr { border: none; border-top: 1px solid var(--muted); opacity: 0.4; margin-top: calc(var(--size) * 0.5); }
+{% endblock %}
+{% block body %}
+{% for s in menu.sections %}
+<section>
+  <h2><span data-mb-kind="section">{{ s.title }}</span></h2>
+  {% for it in s.items %}
+  <div class="entry">
+    <div class="name">{{ m.item(it) }}</div>
+    {% if it.description %}<div class="desc"><span data-mb-kind="description">{{ it.description }}</span></div>{% endif %}
+    <div class="bottom">
+      {% if it.weight %}<span class="size"><span data-mb-kind="other">{{ it.weight }}</span></span>{% endif %}
+      <span class="prices">{% for p in it.prices %}<span>{% if p.size_label %}<span class="size" data-mb-kind="size">{{ p.size_label }}</span> {% endif %}{{ m.price(it, p, loop.first) }}</span>{% endfor %}</span>
+    </div>
+    <hr>
+  </div>
+  {% endfor %}
+</section>
+{% endfor %}
+{% endblock %}

@@ -26,8 +26,9 @@ class ItemSpec:
     id: str
     name: str
     description: str | None
-    prices: list[PriceSpec]
+    prices: list[PriceSpec]  # current prices: one, or one per size
     weight: str | None = None  # "250 г": a number that is not a price
+    old_price: PriceSpec | None = None  # struck-through previous price, rendered next to the current one
 
 
 @dataclass
@@ -64,6 +65,9 @@ class PriceStyle:
     thousands_sep: str = ""
 
     def format(self, value: Decimal) -> str:
+        return self.pattern.replace("{v}", self.number(value))
+
+    def number(self, value: Decimal) -> str:
         if self.decimals:
             number = f"{value:.2f}"
         else:
@@ -71,8 +75,7 @@ class PriceStyle:
         whole, _, frac = number.partition(".")
         if self.thousands_sep and len(whole) > 3:
             whole = f"{int(whole):,}".replace(",", self.thousands_sep)
-        number = whole + (self.decimal_sep + frac if frac else "")
-        return self.pattern.replace("{v}", number)
+        return whole + (self.decimal_sep + frac if frac else "")
 
 
 RU_STYLES = (
@@ -116,7 +119,8 @@ class ContentOptions:
     max_items: int = 6
     description_rate: float = 0.5
     weight_rate: float = 0.0
-    hard_cases: dict[str, float] = field(default_factory=dict)  # tag -> probability per eligible item
+    long_description_rate: float = 0.0
+    hard_cases: dict[str, float] = field(default_factory=dict)  # crossed / from / range -> probability per item
 
 
 def generate_content(rng: random.Random, opts: ContentOptions) -> tuple[MenuContent, PriceStyle]:
@@ -152,12 +156,17 @@ def generate_content(rng: random.Random, opts: ContentOptions) -> tuple[MenuCont
                 break
             counter += 1
             item_id = f"i{counter}"
+            long = rng.random() < opts.long_description_rate
             item = ItemSpec(
                 id=item_id,
                 name=name,
-                description=_description(rng, vocab) if rng.random() < opts.description_rate else None,
+                description=_description(rng, vocab, long) if long or rng.random() < opts.description_rate else None,
                 prices=_prices(rng, item_id, venue.band, vocab, sizes, style),
             )
+            if long and item.description:
+                content.tags.add("long_description")
+            if not sizes:
+                _apply_hard_case(rng, item, style, opts, content)
             if opts.weight_rate and rng.random() < opts.weight_rate and not sizes:
                 item.weight = _weight(rng, opts.lang)
                 content.tags.add("weight")
@@ -178,11 +187,41 @@ def _item_name(rng: random.Random, vocab: SectionVocab, used_bases: set[str]) ->
     return f"{base} {rng.choice(vocab.modifiers)}" if vocab.modifiers and rng.random() < 0.4 else base
 
 
-def _description(rng: random.Random, vocab: SectionVocab) -> str | None:
+def _description(rng: random.Random, vocab: SectionVocab, long: bool = False) -> str | None:
     if not vocab.ingredients:
         return None
-    parts = rng.sample(vocab.ingredients, k=min(len(vocab.ingredients), rng.randint(2, 3)))
+    k = rng.randint(5, 8) if long else rng.randint(2, 3)
+    parts = rng.sample(vocab.ingredients, k=min(len(vocab.ingredients), k))
     return ", ".join(parts)
+
+
+FROM_WORD = {"ru": "от", "en": "from"}
+
+
+def _apply_hard_case(
+    rng: random.Random, item: ItemSpec, style: PriceStyle, opts: ContentOptions, content: MenuContent
+) -> None:
+    """Turns a plain single price into one of the cases that trip extractors."""
+    price = item.prices[0]
+    for case in ("crossed", "from", "range"):
+        if rng.random() >= opts.hard_cases.get(case, 0.0):
+            continue
+        if case == "crossed":
+            old = _round_price(float(price.value) * rng.uniform(1.15, 1.45), style, rng)
+            if old <= price.value:
+                return
+            item.old_price = PriceSpec(id=f"{item.id}old", value=old, kind=PriceKind.CROSSED, text=style.format(old))
+        elif case == "from":
+            price.kind = PriceKind.FROM
+            price.text = f"{FROM_WORD[content.lang]} {price.text}"
+        else:
+            upper = _round_price(float(price.value) * rng.uniform(1.3, 1.8), style, rng)
+            if upper <= price.value:
+                return
+            price.kind, price.value_max = PriceKind.RANGE, upper
+            price.text = style.pattern.replace("{v}", f"{style.number(price.value)}–{style.number(upper)}")
+        content.tags.add(case)
+        return
 
 
 def _weight(rng: random.Random, lang: str) -> str:

@@ -1,0 +1,30 @@
+{% extends "_base.html.j2" %}
+{% import "_macros.html.j2" as m %}
+{% block style %}
+  body { background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.06), transparent 60%), var(--bg); }
+  .board { column-count: {{ theme.columns }}; column-gap: calc(var(--size) * 3); text-align: center; }
+  section { break-inside: avoid; margin-bottom: calc(var(--size) * 1.2); }
+  h2 { border-bottom: 2px dashed var(--muted); display: inline-block; padding-bottom: 4px; }
+  .entry { margin-top: calc(var(--size) * 0.8); }
+  .entry .price { color: var(--accent); font-size: calc(var(--size) * 1.2); }
+  .entry .line { margin-top: 2px; }
+  .desc { max-width: 80%; margin: 2px auto 0; }
+{% endblock %}
+{% block body %}
+<div class="board">
+  {% for s in menu.sections %}
+  <section>
+    <h2><span data-mb-kind="section">{{ s.title }}</span></h2>
+    {% for it in s.items %}
+    <div class="entry">
+      <div>{{ m.item(it) }}{% if it.weight %} <span class="size">(<span data-mb-kind="other">{{ it.weight }}</span>)</span>{% endif %}</div>
+      {% if it.description %}<div class="desc"><span data-mb-kind="description">{{ it.description }}</span></div>{% endif %}
+      <div class="line">
+        {% for p in it.prices %}{% if p.size_label %}<span class="size" data-mb-kind="size">{{ p.size_label }}</span> {% endif %}{{ m.price(it, p, loop.first) }}{% if not loop.last %} &nbsp;·&nbsp; {% endif %}{% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

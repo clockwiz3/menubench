@@ -1,0 +1,8 @@
+{% macro price(it, p, first=True) -%}
+{%- if first and it.old_price %}<s class="old" data-mb-kind="price" data-mb-id="{{ it.old_price.id }}">{{ it.old_price.text }}</s> {% endif -%}
+<span class="price" data-mb-kind="price" data-mb-id="{{ p.id }}">{{ p.text }}</span>
+{%- endmacro %}
+
+{% macro item(it) -%}
+<span data-mb-kind="item" data-mb-id="{{ it.id }}">{{ it.name }}</span>
+{%- endmacro %}
