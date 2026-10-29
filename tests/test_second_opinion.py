@@ -30,3 +30,15 @@ def test_price_elsewhere_on_the_page_does_not_count() -> None:
 def test_repeated_value_is_flagged() -> None:
     s = opinion_signals(_p(350, "Борщ"), (_p(350, "Борщ"), _p(350, "Щи", y=0.5)))
     assert s["value_ambiguous"] == 1.0
+
+
+def test_partial_and_reordered_names_agree() -> None:
+    from menubench.pipeline.second_opinion import names_agree
+
+    full = "САЛАТ «ЦЕЗАРЬ» С КУРИНОЙ ГРУДКОЙ ГРИЛЬ И ОТВАРНЫМ ЯЙЦОМ"
+    assert names_agree(full, "САЛАТ «ЦЕЗАРЬ» С КУРИНОЙ")  # one line of a multi-line name
+    assert names_agree("САЛАТ С МАНГО И ФИЛЕ ФОРЕЛИ", "Салат с манго и форели")  # a dropped word
+    assert names_agree("Солянка сборная", "солянка сборная")
+    assert names_agree("САЛАТ «ГРЕЧЕСКИЙ» С ТОМАТАМИ И ПЕЧЁНЫМ ПЕРЦЕМ", "САЛАТ «ГРЕЧЕСКИЙ»")
+    assert not names_agree(full, "Салат")  # nothing distinctive: any salad would match
+    assert not names_agree(full, "САЛАТ «ГРЕЧЕСКИЙ» С ТОМАТАМИ")  # a different dish

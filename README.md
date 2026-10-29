@@ -7,13 +7,13 @@ them to a till catalog, built on one rule: **a wrong price on a screen is worse 
 
 **The result:** letting an LLM link menu items to the catalog directly puts the wrong item on **27.1%** of links.
 With a strong model reading the menu, an independent pipeline checking it, calibrated confidence and a strict
-linker, wrong links drop to **1.1%**, and **64%** of all prices go on screens without review at **1.0%** errors —
+linker, wrong links drop to **1.1%**, and **67%** of all prices go on screens without review at **1.1%** errors (target: 1%) —
 with the threshold chosen on the dev split and only then measured on test. Everything else goes to a person,
 with a hint that contains the right catalog item in the top 3 in 100% of cases.
 
 | approach | pair F1 % | auto-placed % | wrong among auto-placed % | wrong catalog links % | $/menu |
 |---|---|---|---|---|---|
-| Claude reads, pipeline checks, calibrated (v0.2) | 97.2 | 64.0 | 1.0 | 1.1 | 0.0052 |
+| Claude reads, pipeline checks, calibrated (v0.2) | 97.2 | 66.6 | 1.1 | 1.1 | 0.0052 |
 | Claude Haiku 5.5, one call | 97.2 | – | – | – | 0.0014 |
 | reference pipeline, calibrated (v0.1) | 70.6 | 4.8 | 15.3 | 6.1 | 0.0041 |
 | reference pipeline + LLM picks the catalog item | 70.6 | 4.8 | 15.3 | 27.1 | 0.0042 |
@@ -41,14 +41,17 @@ Haiku 5.5 read the same menus at 97.2% pair F1 for $0.0014.
 
 **v0.2 — the strong model reads, the pipeline checks.** One call is accurate but cannot say where it is wrong.
 The v0.1 pipeline is weaker but fails differently, so its agreement with the reader is a signal. Calibrated on dev
-only, the combined confidence gives a 1% operating point that held on test (64.0% auto-placed, 1.0% wrong).
+only, the combined confidence gives a 1% operating point that held on test (66.6% auto-placed, 1.1% wrong).
+The first real menu photo showed the verifier reading only one line of multi-line dish names ("САЛАТ «ЦЕЗАРЬ»"),
+which counted as disagreement and sent correct prices to review; agreement now means the verifier's distinctive
+words are part of the reader's name. Recalibrated on dev, re-measured on test.
 
 | calibrated on | AURC ↓ | best possible auto-placed at ≤1% (hindsight) % | auto-placed at the dev threshold % | wrong among them % |
 |---|---|---|---|---|
-| reader confidence + verifier agreement | 0.0104 | 60.3 | 64.0 | 1.0 |
+| reader confidence + verifier agreement | 0.0096 | 63.4 | 66.6 | 1.1 |
 | reader confidence only | 0.0075 | 26.3 | 0.0 | – (n=0) |
 
-The reader's own confidence ranks test errors at least as well (AURC 0.0075 vs 0.0104), but on dev it never got
+The reader's own confidence ranks test errors at least as well (AURC 0.0075 vs 0.0096), but on dev it never got
 below 1% error at any threshold, so no operating point could be set from it. The verifier's agreement is what made a
 1% threshold chosen on dev possible, and that threshold transferred. Which signal holds better on real photos is the
 open question.
@@ -80,7 +83,7 @@ layouts — to find where systems break. Numbers on uniform production menus of 
 | config | price F1 % | pair F1 % | AURC ↓ | ECE ↓ | auto-placed % | wrong among auto-placed % | $/menu | p50 s | menus |
 |---|---|---|---|---|---|---|---|---|---|
 | `e2e-claude-haiku55` | 98.7 | 97.2 | 0.007 | 0.086 | – | – | 0.0014 | 10.7 | 197 |
-| `second-opinion-claude-cal` | 98.7 | 97.2 | 0.010 | 0.097 | 64.0 | 1.0 | 0.0052 | 7.5 | 197 |
+| `second-opinion-claude-cal` | 98.7 | 97.2 | 0.010 | 0.099 | 66.6 | 1.1 | 0.0052 | 7.0 | 197 |
 | `e2e-qwen3vl-235b` | 94.0 | 92.7 | 0.052 | 0.043 | – | – | 0.0029 | 35.3 | 197 |
 | `e2e-gemini31-flash-lite` | 93.7 | 92.4 | 0.063 | 0.038 | – | – | 0.0026 | 5.2 | 197 |
 | `e2e-gemini25-flash-lite` | 93.6 | 90.1 | 0.076 | 0.085 | – | – | 0.0005 | 4.8 | 197 |
@@ -103,7 +106,7 @@ Latency of `second-opinion-claude-cal` was measured on cached calls; live, it is
 | `full-gemini25-flash-lite-cal` | 163 | 6.1 | 6.9 | 99.8 | 96.8 | 10 |
 | `full-gemini25-flash-lite-linkdirect` | 2933 | 27.1 | 96.8 | – | 99.1 | 794 |
 | `full-gemini31-attr-cal` | 3 | – (n=3) | 0.0 | 100.0 | 96.8 | 3 |
-| `second-opinion-claude-cal` | 1968 | 1.1 | 61.5 | 100.0 | 96.2 | 21 |
+| `second-opinion-claude-cal` | 2043 | 1.1 | 63.8 | 100.0 | 96.2 | 22 |
 
 ### Ablations of the v0.1 pipeline
 

@@ -15,6 +15,7 @@ from typing import Any
 
 from menubench.calibration import Calibrator
 from menubench.eval.match import spatially_close
+from menubench.eval.text import normalize
 from menubench.link import LinkerConfig, arbitrate, decide
 from menubench.pipeline.base import MenuInput, Pipeline, StageLog
 from menubench.pipeline.baselines import VlmEndToEnd
@@ -33,16 +34,34 @@ def _counterpart(price: PricePrediction, others: tuple[PricePrediction, ...]) ->
     return same_value[0] if len(same_value) == 1 else None
 
 
+_GENERIC = {"салат", "суп", "блюдо", "порция", "salad", "soup", "dish", "with", "and", "the"}
+
+
+def _content_words(name: str | None) -> set[str]:
+    return {w for w in normalize(name or "").split() if len(w) >= 4 and w not in _GENERIC}
+
+
+def names_agree(reader: str | None, verifier: str | None) -> bool:
+    """Same dish, read differently. The verifier reads one crop at a time, so on multi-line names it often returns
+    one line, drops a word or swaps the order. Agreement means: near-identical text, or the verifier's distinctive
+    words are all part of the reader's name. Generic words do not count, so a bare "Salad" agrees with nothing;
+    the price itself already matched by value and position."""
+    if _same(reader, verifier):
+        return True
+    ours, theirs = _content_words(reader), _content_words(verifier)
+    return len(theirs) >= 1 and theirs <= ours
+
+
 def opinion_signals(price: PricePrediction, others: tuple[PricePrediction, ...]) -> dict[str, float]:
     other = _counterpart(price, others)
     duplicates = sum(1 for o in others if o.page == price.page and o.value == price.value)
     return {
         "reader_conf": price.confidence,
         "verifier_found_price": float(other is not None),
-        "verifier_agrees_on_item": float(other is not None and _same(price.name, other.name)),
+        "verifier_agrees_on_item": float(other is not None and names_agree(price.name, other.name)),
         "verifier_conf": other.confidence if other is not None else 0.0,
         "verifier_agrees_and_confident": float(
-            other is not None and _same(price.name, other.name) and other.confidence >= 0.8
+            other is not None and names_agree(price.name, other.name) and other.confidence >= 0.8
         ),
         "value_ambiguous": float(duplicates > 1),
         "reader_has_box": float(price.bbox is not None),

@@ -4,4 +4,4 @@
 | `full-gemini25-flash-lite-cal` | 163 | 6.1 | 6.9 | 99.8 | 96.8 | 10 |
 | `full-gemini25-flash-lite-linkdirect` | 2933 | 27.1 | 96.8 | – | 99.1 | 794 |
 | `full-gemini31-attr-cal` | 3 | – (n=3) | 0.0 | 100.0 | 96.8 | 3 |
-| `second-opinion-claude-cal` | 1968 | 1.1 | 61.5 | 100.0 | 96.2 | 21 |
+| `second-opinion-claude-cal` | 2043 | 1.1 | 63.8 | 100.0 | 96.2 | 22 |
