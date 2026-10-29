@@ -3,3 +3,4 @@ pipeline: vlm_e2e
 split: dev
 models:
   vlm: qwen/qwen3-vl-8b-instruct
+llm_concurrency: 8

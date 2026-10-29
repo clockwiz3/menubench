@@ -221,7 +221,13 @@ class FullPipeline(Pipeline):
     ) -> tuple[PricePrediction | None, dict[str, Any]]:
         passes = int(self.params.get("passes", 2))
         votes = list(await asyncio.gather(*(self._ask(image, cand, lines, v, spend) for v in range(passes))))
-        if passes >= 2 and not all(_same(votes[0].item, v.item) for v in votes[1:]) and passes < len(VIEWS):
+        tiebreak = bool(self.params.get("tiebreak", True))
+        if (
+            tiebreak
+            and passes >= 2
+            and not all(_same(votes[0].item, v.item) for v in votes[1:])
+            and passes < len(VIEWS)
+        ):
             votes.append(await self._ask(image, cand, lines, passes, spend))
         winner, agreement = _vote(votes)
 
@@ -292,8 +298,10 @@ class FullPipeline(Pipeline):
                 page=page_no,
                 candidates=[{"text": c.text, "bbox": c.bbox.model_dump(), "merged": c.merged_name} for c in cands],
             )
+            counter = [0]
             results = await asyncio.gather(
-                *(self._attribute(image, c, lines, cands, spend) for c in cands), return_exceptions=True
+                *(self._tracked(image, c, lines, cands, spend, log, page_no, counter) for c in cands),
+                return_exceptions=True,
             )
             decisions = []
             for cand, result in zip(cands, results, strict=True):
@@ -317,6 +325,23 @@ class FullPipeline(Pipeline):
             cost_usd=spend.usd,
             latency_s=time.perf_counter() - started,
         )
+
+    async def _tracked(
+        self,
+        image: Image.Image,
+        cand: Candidate,
+        lines: list[TextLine],
+        cands: list[Candidate],
+        spend: Spend,
+        log: StageLog,
+        page_no: int,
+        counter: list[int],
+    ) -> tuple[PricePrediction | None, dict[str, Any]]:
+        """Attributes one price and reports progress, so a live view can fill in prices as they arrive."""
+        result = await self._attribute(image, cand, lines, cands, spend)
+        counter[0] += 1
+        await log.progress("price", page=page_no, done=counter[0], total=len(cands), item=result[1].get("winner"))
+        return result
 
     async def _link(
         self, menu: MenuInput, prices: list[PricePrediction], log: StageLog, spend: Spend

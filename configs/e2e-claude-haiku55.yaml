@@ -3,3 +3,4 @@ pipeline: vlm_e2e
 split: dev
 models:
   vlm: anthropic/claude-haiku-5.5
+llm_concurrency: 8

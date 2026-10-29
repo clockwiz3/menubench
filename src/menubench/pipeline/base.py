@@ -41,6 +41,13 @@ class StageLog:
         self.trace.setdefault("stages", []).append(
             {"stage": name, "t": round(time.perf_counter() - self.started, 3), **data}
         )
+        await self._send(name, data)
+
+    async def progress(self, name: str, **data: Any) -> None:
+        """Live progress for listeners (the demo's event stream); not recorded in the trace."""
+        await self._send(name, data)
+
+    async def _send(self, name: str, data: dict[str, Any]) -> None:
         result = self.emit(name, data)
         if inspect.isawaitable(result):
             await result

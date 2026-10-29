@@ -3,3 +3,4 @@ pipeline: vlm_e2e
 split: dev
 models:
   vlm: google/gemini-3.1-flash-lite
+llm_concurrency: 8

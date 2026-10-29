@@ -1,0 +1,14 @@
+# Stronger attribution model; OCR stays on the cheap model that already reads synthetic menus perfectly.
+name: full-gemini31-attr-cal
+pipeline: full
+split: dev
+budget_usd: 5.0
+llm_concurrency: 8
+models:
+  ocr: google/gemini-2.5-flash-lite
+  attribution: google/gemini-3.1-flash-lite
+  arbiter: google/gemini-2.5-flash-lite
+params:
+  link: strict
+  calibrator: configs/calibration/full-gemini31-attr.json
+  target_risk: 0.01

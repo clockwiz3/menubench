@@ -21,6 +21,7 @@ dependencies = [
     "python-multipart>=0.0.32",
     "scikit-learn>=1.9.1",
     "pypdfium2>=5.14.0",
+    "matplotlib>=3.11.2",
 ]
 
 [project.scripts]

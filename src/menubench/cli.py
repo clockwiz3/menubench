@@ -42,6 +42,7 @@ def run(
     config: Annotated[Path, typer.Argument(help="Run config (YAML).")],
     limit: Annotated[int | None, typer.Option(help="Process only the first N menus.")] = None,
     split: Annotated[str | None, typer.Option(help="Override the dataset split.")] = None,
+    dataset: Annotated[str | None, typer.Option(help="Override the dataset directory, e.g. data/real.")] = None,
     mode: Annotated[str, typer.Option(help="Cache mode: record-missing | replay | live.")] = "record-missing",
     dry_run: Annotated[bool, typer.Option(help="Estimate cost without calling models.")] = False,
 ) -> None:
@@ -55,7 +56,7 @@ def run(
     from menubench.pipeline.runner import RunConfig, estimate_cost, run_config
 
     cfg = RunConfig.load(config)
-    updates = {k: v for k, v in {"limit": limit, "split": split}.items() if v is not None}
+    updates = {k: v for k, v in {"limit": limit, "split": split, "dataset": dataset}.items() if v is not None}
     cfg = cfg.model_copy(update=updates)
     if dry_run:
         typer.echo(json.dumps(estimate_cost(cfg), indent=1))
@@ -82,11 +83,11 @@ def evaluate(
 
 
 @app.command()
-def report() -> None:
-    """Build README tables from the latest evaluated run of every config."""
+def report(split: Annotated[str, typer.Option(help="Which split's runs go into the tables.")] = "test") -> None:
+    """Build README tables and the risk-coverage chart from the latest evaluated run of every config."""
     from menubench.report import write_reports
 
-    for path in write_reports():
+    for path in write_reports(split=split):
         typer.echo(f"wrote {path}")
 
 
@@ -140,3 +141,48 @@ def calibrate(
         "weights: " + ", ".join(f"{f}={c:+.2f}" for f, c in zip(calibrator.features, calibrator.coef, strict=True))
     )
     typer.echo(f"wrote {out}")
+
+
+@app.command()
+def gallery(
+    run_dir: Annotated[Path, typer.Argument(help="A finished run whose menus become demo examples.")],
+    menus: Annotated[str, typer.Option(help="Comma-separated menu ids.")],
+    out: Annotated[Path, typer.Option(help="Gallery folder shipped with the server.")] = Path(
+        "src/menubench/server/gallery"
+    ),
+) -> None:
+    """Copy precomputed results into the demo gallery, so the demo works without spending anything."""
+    from datetime import UTC, datetime
+
+    from PIL import Image
+
+    from menubench.data import Dataset
+    from menubench.runs import RunDir
+    from menubench.server.try_api import GalleryItem, TryJob, TryPage
+
+    run = RunDir(run_dir)
+    dataset = Dataset(Path(run.info().dataset))
+    predictions = {p.menu_id: p for p in run.predictions()}
+    out.mkdir(parents=True, exist_ok=True)
+    for menu_id in [m.strip() for m in menus.split(",") if m.strip()]:
+        ann = dataset.annotation(menu_id)
+        image = f"{menu_id}.jpg"
+        with Image.open(dataset.page_path(ann, 0)) as img:
+            img.convert("RGB").save(out / image, format="JPEG", quality=85)
+        page = ann.pages[0]
+        job = TryJob(
+            job_id=menu_id,
+            status="done",
+            pages=[TryPage(index=0, width=page.width, height=page.height, url=f"/api/try/gallery/{image}")],
+            prediction=predictions[menu_id].model_copy(update={"lines": ()}),
+            created_at=datetime.now(UTC),
+        )
+        title = f"{ann.template} · {ann.lang} · {ann.augment.value if ann.augment else 'clean'}"
+        note = (
+            "synthetic test menu; layout held out during development"
+            if ann.template in ("price_left", "tv_landscape")
+            else "synthetic test menu"
+        )
+        item = GalleryItem(id=menu_id, title=title, note=note, job=job)
+        (out / f"{menu_id}.json").write_text(item.model_dump_json(indent=1), encoding="utf-8")
+        typer.echo(f"added {menu_id}")
