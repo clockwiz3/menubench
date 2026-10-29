@@ -132,9 +132,7 @@ def render_html(content: MenuContent, template: str, theme: dict[str, Any]) -> s
     return _env.get_template(f"{template}.html.j2").render(menu=content, theme=theme)
 
 
-def build_menu(
-    renderer: Renderer, menu_id: str, seed: int, lang: str, template: str, **content_opts: Any
-) -> SynthMenu:
+def build_menu(renderer: Renderer, menu_id: str, seed: int, lang: str, template: str, **content_opts: Any) -> SynthMenu:
     rng = random.Random(seed)
     content, _style = generate_content(rng, ContentOptions(lang=lang, **content_opts))
     theme = TEMPLATES[template].theme(rng)
@@ -144,9 +142,7 @@ def build_menu(
     return SynthMenu(annotation=annotation, png=rendered.png, html=html)
 
 
-def to_annotation(
-    menu_id: str, seed: int, template: str, content: MenuContent, rendered: Rendered
-) -> MenuAnnotation:
+def to_annotation(menu_id: str, seed: int, template: str, content: MenuContent, rendered: Rendered) -> MenuAnnotation:
     with Image.open(io.BytesIO(rendered.png)) as img:
         width, height = img.size
 
@@ -229,9 +225,7 @@ def generate_dataset(out: Path, cfg: SynthConfig, on_menu: Callable[[str], None]
             menu_dir = out / menu_id
             menu_dir.mkdir(exist_ok=True)
             (menu_dir / "page-0.png").write_bytes(menu.png)
-            (menu_dir / "annotation.json").write_text(
-                menu.annotation.model_dump_json(indent=1), encoding="utf-8"
-            )
+            (menu_dir / "annotation.json").write_text(menu.annotation.model_dump_json(indent=1), encoding="utf-8")
             index.append({"menu_id": menu_id, "split": split, "lang": lang, "template": template})
             if on_menu:
                 on_menu(menu_id)

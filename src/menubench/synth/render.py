@@ -134,7 +134,6 @@ class Renderer:
         finally:
             page.close()
         elements = tuple(
-            RenderedElement(e["kind"], e["id"], tuple(_line(raw) for raw in e["lines"]))
-            for e in data["elements"]
+            RenderedElement(e["kind"], e["id"], tuple(_line(raw) for raw in e["lines"])) for e in data["elements"]
         )
         return Rendered(png=png, width=int(data["width"]), height=int(data["height"]), elements=elements)

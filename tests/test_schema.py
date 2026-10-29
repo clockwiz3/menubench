@@ -20,9 +20,7 @@ PAGE = Page(index=0, width=1000, height=1400, image="menu-0001/page-0.png")
 
 
 def _item(item_id: str = "i1", catalog_id: str | None = None) -> MenuItem:
-    return MenuItem(
-        id=item_id, page=0, name="Борщ", bbox=BBox(x0=0.1, y0=0.1, x1=0.5, y1=0.13), catalog_id=catalog_id
-    )
+    return MenuItem(id=item_id, page=0, name="Борщ", bbox=BBox(x0=0.1, y0=0.1, x1=0.5, y1=0.13), catalog_id=catalog_id)
 
 
 def _price(**overrides: object) -> PriceAnnotation:
@@ -84,9 +82,7 @@ def test_annotation_rejects_dangling_references() -> None:
 
 def test_link_decision_consistency() -> None:
     LinkDecision(action="link", catalog_id="c1")
-    LinkDecision(
-        action="hint", candidates=(LinkCandidate(catalog_id="c1", score=0.7),), reason="two close matches"
-    )
+    LinkDecision(action="hint", candidates=(LinkCandidate(catalog_id="c1", score=0.7),), reason="two close matches")
     with pytest.raises(ValidationError):
         LinkDecision(action="abstain", catalog_id="c1")
     with pytest.raises(ValidationError):

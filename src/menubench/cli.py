@@ -9,9 +9,7 @@ import typer
 
 from menubench import __version__
 
-app = typer.Typer(
-    no_args_is_help=True, add_completion=False, help="MenuBench: menu price extraction benchmark."
-)
+app = typer.Typer(no_args_is_help=True, add_completion=False, help="MenuBench: menu price extraction benchmark.")
 
 
 def _not_ready(milestone: str) -> None:
@@ -54,7 +52,11 @@ def evaluate(
     run_dir: Annotated[Path, typer.Argument(help="Directory produced by `menubench run`.")],
 ) -> None:
     """Score predictions against ground truth."""
-    _not_ready("M2")
+    from menubench.eval import evaluate_run
+    from menubench.eval.report import format_summary
+    from menubench.runs import RunDir
+
+    typer.echo(format_summary(evaluate_run(RunDir(run_dir))))
 
 
 @app.command()

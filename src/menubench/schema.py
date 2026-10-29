@@ -196,6 +196,7 @@ class MenuPrediction(_Model):
     links: tuple[LinkDecision | None, ...] = ()  # aligned with prices; empty when track B is off
     cost_usd: float = Field(default=0.0, ge=0)
     latency_s: float = Field(default=0.0, ge=0)
+    error: str | None = None  # set when the pipeline failed on this menu
 
     @model_validator(mode="after")
     def _aligned(self) -> Self:
