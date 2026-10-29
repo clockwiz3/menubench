@@ -1,0 +1,5 @@
+name: e2e-gemini25-flash-lite
+pipeline: vlm_e2e
+split: dev
+models:
+  vlm: google/gemini-2.5-flash-lite

@@ -1,0 +1,5 @@
+name: e2e-qwen3vl-235b
+pipeline: vlm_e2e
+split: dev
+models:
+  vlm: qwen/qwen3-vl-235b-a22b-instruct

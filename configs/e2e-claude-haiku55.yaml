@@ -1,0 +1,5 @@
+name: e2e-claude-haiku55
+pipeline: vlm_e2e
+split: dev
+models:
+  vlm: anthropic/claude-haiku-5.5

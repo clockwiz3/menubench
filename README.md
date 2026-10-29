@@ -10,7 +10,7 @@ So the pipeline is allowed to say "not sure" — and it is scored on that. Inste
 MenuBench reports a **risk–coverage curve**: how many errors remain among the prices the system decided to label,
 at every level of coverage.
 
-**Status:** early development (milestone M0 of [the plan](PLAN.md)). No results yet.
+**Status:** in development, see [the plan](PLAN.md).
 
 ## What it measures
 
@@ -35,6 +35,19 @@ experiment can be replayed offline at zero cost.
 Development runs on a procedural synthetic generator: HTML layouts rendered with Playwright, exact boxes from
 the DOM, photo-like augmentations. The pipeline is frozen before real menu photos are collected, so the real
 split is an honest held-out test of the synthetic-to-real gap.
+
+## Results so far
+
+Synthetic v0 (clean renders, 22 dev menus, 400 prices). Clean synthetic menus are already saturated by strong VLMs; the hard cases and photo-like augmentations of v1 are what separate the configurations. Full tables: [OCR](reports/ocr.md), [extraction](reports/extraction.md).
+
+| config | price F1 % | pair F1 % | names % | AURC ↓ | safe recall @1% risk | @5% risk | $/menu | p50 s | menus |
+|---|---|---|---|---|---|---|---|---|---|
+| `e2e-gemini31-flash-lite` | 100.0 | 100.0 | 100.0 | 0.000 | 100.0 | 100.0 | 0.0024 | 3.9 | 22 |
+| `e2e-qwen3vl-235b` | 100.0 | 100.0 | 100.0 | 0.000 | 100.0 | 100.0 | 0.0027 | 26.9 | 22 |
+| `e2e-claude-haiku55` | 100.0 | 99.8 | 99.8 | 0.001 | 99.8 | 99.8 | 0.0011 | 7.4 | 22 |
+| `e2e-gemini25-flash-lite` | 98.4 | 98.1 | 99.8 | 0.032 | 0.0 | 98.8 | 0.0005 | 3.3 | 22 |
+| `heuristic-gemini25-flash-lite` | 97.0 | 86.2 | 88.9 | 0.270 | 0.0 | 0.0 | 0.0007 | 4.5 | 22 |
+| `e2e-qwen3vl-8b` | 75.2 | 74.8 | 99.3 | 0.189 | 0.0 | 0.0 | 0.0012 | 11.9 | 22 |
 
 ## Quick start
 

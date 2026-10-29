@@ -43,9 +43,10 @@ class RunConfig(BaseModel):
 
 
 def pipelines() -> dict[str, type[Pipeline]]:
+    from menubench.pipeline.baselines import OcrHeuristic, VlmEndToEnd
     from menubench.pipeline.ocr_only import OcrOnly
 
-    return {p.name: p for p in (OcrOnly,)}
+    return {p.name: p for p in (OcrOnly, VlmEndToEnd, OcrHeuristic)}
 
 
 def build_pipeline(cfg: RunConfig, client: LLMClient) -> Pipeline:

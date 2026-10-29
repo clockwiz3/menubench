@@ -1,0 +1,5 @@
+name: heuristic-gemini25-flash-lite
+pipeline: ocr_heuristic
+split: dev
+models:
+  ocr: google/gemini-2.5-flash-lite
