@@ -32,8 +32,20 @@ const ocr = computed(() =>
     .sort((a, b) => (b.ocr_line_recall ?? -1) - (a.ocr_line_recall ?? -1)),
 )
 
+// Up to three runs can be compared: the chart has three validated series colors.
+const MAX_COMPARE = 3
+const picked = ref<string[]>([])
+function toggle(run: RunSummary) {
+  const i = picked.value.indexOf(run.run_id)
+  if (i >= 0) picked.value.splice(i, 1)
+  else if (picked.value.length < MAX_COMPARE) picked.value.push(run.run_id)
+}
+function compare() {
+  router.push({ name: 'compare', query: { runs: picked.value.join(',') } })
+}
+
 function models(run: RunSummary): string {
-  return Object.values(run.models).map(shortModel).join(' + ')
+  return [...new Set(Object.values(run.models).map(shortModel))].join(' + ')
 }
 function open(run: RunSummary) {
   router.push({ name: 'run', params: { runId: run.run_id } })
@@ -50,10 +62,19 @@ function open(run: RunSummary) {
           the right item.
         </p>
       </div>
-      <label class="flex items-center gap-2 text-sm text-ink-2">
-        <input v-model="latestOnly" type="checkbox" class="accent-[var(--accent)]" />
-        Latest run per config
-      </label>
+      <div class="flex items-center gap-4">
+        <button
+          class="rounded-md border border-line px-3 py-1.5 text-sm disabled:opacity-40 enabled:hover:bg-surface-2"
+          :disabled="picked.length < 2"
+          @click="compare"
+        >
+          Compare curves ({{ picked.length }}/{{ MAX_COMPARE }})
+        </button>
+        <label class="flex items-center gap-2 text-sm text-ink-2">
+          <input v-model="latestOnly" type="checkbox" class="accent-[var(--accent)]" />
+          Latest run per config
+        </label>
+      </div>
     </div>
 
     <p v-if="error" class="card p-4 text-sm text-critical">{{ error }}</p>
@@ -67,14 +88,21 @@ function open(run: RunSummary) {
       <table class="data mt-2">
         <thead>
           <tr>
+            <th class="w-8"><span class="sr-only">Compare</span></th>
             <th>Config</th>
             <th>Models</th>
+            <th>Split</th>
             <th class="text-right">Price F1</th>
             <th class="text-right">Pair F1</th>
-            <th class="text-right">Names</th>
             <th class="text-right" title="Area under the risk–coverage curve; lower is better">AURC</th>
-            <th class="text-right" title="Share of all prices placed automatically with at most 1% errors">
-              Safe @1%
+            <th
+              class="text-right"
+              title="Prices placed without review at the threshold frozen on dev, and how many of those were wrong"
+            >
+              Auto-placed / wrong
+            </th>
+            <th class="text-right" title="Track B: share of catalog links that point to the wrong item">
+              Wrong links
             </th>
             <th class="text-right">$/menu</th>
             <th class="text-right">p50</th>
@@ -84,13 +112,34 @@ function open(run: RunSummary) {
         </thead>
         <tbody>
           <tr v-for="r in extraction" :key="r.run_id" class="clickable" @click="open(r)">
+            <td @click.stop>
+              <input
+                type="checkbox"
+                class="accent-[var(--accent)]"
+                :aria-label="`Compare ${r.config_name}`"
+                :checked="picked.includes(r.run_id)"
+                :disabled="!picked.includes(r.run_id) && picked.length >= MAX_COMPARE"
+                @change="toggle(r)"
+              />
+            </td>
             <td class="font-medium">{{ r.config_name }}</td>
             <td class="text-ink-2">{{ models(r) }}</td>
+            <td class="text-ink-2">{{ r.split }}</td>
             <td class="num text-right">{{ pct(r.price_f1) }}</td>
             <td class="num text-right font-semibold">{{ pct(r.pair_f1) }}</td>
-            <td class="num text-right">{{ pct(r.name_accuracy) }}</td>
             <td class="num text-right">{{ num(r.aurc, 3) }}</td>
-            <td class="num text-right">{{ pct(r.safe_recall_1) }}</td>
+            <td class="num text-right">
+              <template v-if="r.auto_recall != null"
+                >{{ pct(r.auto_recall) }} / {{ pct(r.auto_risk) }}</template
+              >
+              <span v-else class="text-ink-3">–</span>
+            </td>
+            <td
+              class="num text-right"
+              :class="(r.wrong_link_rate ?? 0) > 0.02 ? 'font-semibold text-critical' : ''"
+            >
+              {{ pct(r.wrong_link_rate) }}
+            </td>
             <td class="num text-right">{{ usd(r.per_menu_usd) }}</td>
             <td class="num text-right">{{ seconds(r.latency_p50) }}</td>
             <td class="num text-right">
@@ -112,6 +161,7 @@ function open(run: RunSummary) {
         <thead>
           <tr>
             <th>Model</th>
+            <th>Split</th>
             <th class="text-right">Text found</th>
             <th class="text-right">Located</th>
             <th class="text-right">$/menu</th>
@@ -123,6 +173,7 @@ function open(run: RunSummary) {
         <tbody>
           <tr v-for="r in ocr" :key="r.run_id" class="clickable" @click="open(r)">
             <td class="font-medium">{{ models(r) }}</td>
+            <td class="text-ink-2">{{ r.split }}</td>
             <td class="num text-right">{{ pct(r.ocr_text_recall) }}</td>
             <td class="num text-right font-semibold">{{ pct(r.ocr_line_recall) }}</td>
             <td class="num text-right">{{ usd(r.per_menu_usd) }}</td>

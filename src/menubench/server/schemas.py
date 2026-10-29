@@ -33,6 +33,11 @@ class RunSummary(BaseModel):
     per_menu_usd: float | None = None
     latency_p50: float | None = None
     has_prices: bool = False
+    ece: float | None = None
+    auto_recall: float | None = None  # share of all prices auto-placed and right, at the run's frozen threshold
+    auto_risk: float | None = None  # error rate among auto-placed prices
+    wrong_link_rate: float | None = None
+    hint_top3: float | None = None
 
 
 class MenuRow(BaseModel):

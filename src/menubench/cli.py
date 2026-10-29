@@ -112,3 +112,31 @@ def openapi(out: Annotated[Path, typer.Option(help="Where to write the schema.")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(create_app().openapi(), indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     typer.echo(f"wrote {out}")
+
+
+@app.command()
+def calibrate(
+    run_dir: Annotated[Path, typer.Argument(help="A run on the dev split with a pipeline that records signals.")],
+    out: Annotated[Path, typer.Option(help="Where to write the calibrator.")] = Path("configs/calibration/full.json"),
+) -> None:
+    """Fit confidence calibration and auto-place thresholds on a dev run."""
+    from menubench.calibration import expected_calibration_error, fit, labelled
+    from menubench.runs import RunDir
+
+    run = RunDir(run_dir)
+    if run.info().split != "dev":
+        typer.echo("Refusing to calibrate on a non-dev split: thresholds must not see the test data.", err=True)
+        raise typer.Exit(code=2)
+    samples = labelled(run)
+    calibrator = fit(samples, fitted_on=run.run_id)
+    labels = [ok for _, ok in samples]
+    before = expected_calibration_error([p.confidence for p, _ in samples], labels)["ece"]
+    after = expected_calibration_error([calibrator.predict(p.signals) for p, _ in samples], labels)["ece"]
+    calibrator.save(out)
+    typer.echo(f"samples {calibrator.samples}, correct {calibrator.positives}")
+    typer.echo(f"ECE on dev: {before} -> {after} (in-sample)")
+    typer.echo("auto-place thresholds: " + ", ".join(f"risk<={k}: {v}" for k, v in calibrator.thresholds.items()))
+    typer.echo(
+        "weights: " + ", ".join(f"{f}={c:+.2f}" for f, c in zip(calibrator.features, calibrator.coef, strict=True))
+    )
+    typer.echo(f"wrote {out}")

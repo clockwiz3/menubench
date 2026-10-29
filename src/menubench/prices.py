@@ -86,7 +86,7 @@ def parse_price(text: str) -> ParsedPrice | None:
     m = _RANGE.match(s)
     if m:
         a, b = _number(m["a"], m["ad"]), _number(m["b"], m["bd"])
-        if a is None or b is None or not 0 < a < b:
+        if a is None or b is None or not 0 < a < b or b > a * 4:  # "214-7788" is a phone, not a range
             return None
         return ParsedPrice(a, b, PriceKind.RANGE, _currency(m["pre"], m["post"], m["pre2"], m["post2"]))
     return None
@@ -102,3 +102,35 @@ def split_trailing_price(text: str) -> tuple[str, ParsedPrice] | None:
     if parsed is None or not head or not any(ch.isalpha() for ch in head):
         return None
     return head, parsed
+
+
+_CUR = r"(?:₽|руб\.?|р\.?|€|\$|₸|тг)"
+_N = r"\d{1,3}(?:[    ]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?"
+_INLINE = re.compile(
+    rf"(?<![\w:+/.,()\-])(?:(?:от|from)\s+)?[$€£₽₸]?\s?(?:{_N})(?:\s?[-–—]\s?[$€£₽₸]?\s?(?:{_N}))?(?:\s?{_CUR}|,-)?(?!\d)",
+    re.IGNORECASE,
+)
+
+
+def find_prices(text: str) -> list[tuple[int, int, ParsedPrice]]:
+    """All prices inside one OCR line: '12" $29', "S 250 ₽ M 300 ₽", "Борщ ..... 350".
+
+    A number without a currency is accepted only at the very end of the line and not before a unit or a word:
+    in the middle of a line it is far more likely a weight, a count, a time or part of a name.
+    """
+    out = []
+    stripped = text.rstrip()
+    for m in _INLINE.finditer(text):
+        raw = m.group(0)
+        parsed = parse_price(raw.strip())
+        if parsed is None:
+            continue
+        if parsed.currency is None:
+            after = text[m.end() :].lstrip()
+            if after[:1].isalpha() or after[:1] in ('"', "″", "%", ":"):
+                continue
+            if parsed.kind is not PriceKind.FROM and m.end() < len(stripped):
+                continue
+        start = m.start() + len(raw) - len(raw.lstrip())
+        out.append((start, m.end(), parsed))
+    return out

@@ -6,7 +6,7 @@ import re
 import statistics
 from dataclasses import dataclass
 
-from menubench.prices import ParsedPrice, parse_price, split_trailing_price
+from menubench.prices import ParsedPrice, find_prices, parse_price
 from menubench.schema import BBox, TextLine
 
 _SIZE_LABEL = re.compile(
@@ -35,15 +35,18 @@ def find_candidates(lines: list[TextLine]) -> list[Candidate]:
         if parsed is not None:
             out.append(Candidate(i, parsed, line.text, line.bbox))
             continue
-        split = split_trailing_price(line.text)
-        if split is not None:
-            name, parsed = split
-            # The price sits at the right end of a merged line; approximate its box by text share.
-            share = max(0.15, min(0.5, (len(line.text) - len(name)) / max(len(line.text), 1)))
-            b = line.bbox
-            box = BBox(x0=b.x1 - (b.x1 - b.x0) * share, y0=b.y0, x1=b.x1, y1=b.y1)
-            # "25 см 1 150 р.": the head is a size label, not a dish name.
-            out.append(Candidate(i, parsed, line.text, box, merged_name=None if is_size_label(name) else name))
+        found = find_prices(line.text)
+        if not found:
+            continue
+        # Merged line: place each price by its character span; good enough for VLM-quality boxes.
+        n = max(len(line.text), 1)
+        b = line.bbox
+        width = b.x1 - b.x0
+        head = line.text[: found[0][0]].strip(" .·…_-—–")
+        name = head if head and any(ch.isalpha() for ch in head) and not is_size_label(head) else None
+        for start, end, price in found:
+            box = BBox(x0=b.x0 + width * start / n, y0=b.y0, x1=min(b.x1, b.x0 + width * end / n + 1e-4), y1=b.y1)
+            out.append(Candidate(i, price, line.text[start:end].strip(), box, merged_name=name))
     return out
 
 

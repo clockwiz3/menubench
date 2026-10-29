@@ -166,6 +166,7 @@ class PricePrediction(_Model):
     name: str | None = None
     confidence: float = Field(ge=0, le=1)
     signals: dict[str, float] = Field(default_factory=dict)  # raw evidence behind `confidence`, for calibration
+    auto: bool | None = None  # pipeline's own decision: place without review (None: no operating point set)
 
 
 class LinkCandidate(_Model):

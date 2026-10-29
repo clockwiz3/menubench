@@ -57,6 +57,11 @@ def summarize(run: RunDir) -> RunSummary:
         per_menu_usd=(m.get("cost") or {}).get("per_menu_usd"),
         latency_p50=(m.get("latency_s") or {}).get("p50"),
         has_prices=bool(m.get("pred_prices")),
+        ece=(m.get("calibration") or {}).get("ece"),
+        auto_recall=(m.get("operating_point") or {}).get("recall"),
+        auto_risk=(m.get("operating_point") or {}).get("risk"),
+        wrong_link_rate=(m.get("linking") or {}).get("wrong_link_rate"),
+        hint_top3=(m.get("linking") or {}).get("hint_top3"),
     )
 
 

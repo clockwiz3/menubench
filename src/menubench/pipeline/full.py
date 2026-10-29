@@ -12,18 +12,21 @@ import statistics
 import time
 from collections import Counter
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from PIL import Image, ImageDraw
 
+from menubench.calibration import Calibrator
 from menubench.detect import Candidate, find_candidates, median_height
 from menubench.eval.text import cer, normalize
+from menubench.link import LinkerConfig, arbitrate, decide, link_direct
 from menubench.llm import ImagePart, LLMError, parse_json, prompt
 from menubench.ocr import vlm_ocr
 from menubench.pipeline.base import MenuInput, Pipeline, StageLog
 from menubench.pipeline.baselines import attribute_by_geometry
 from menubench.prices import parse_price
-from menubench.schema import BBox, MenuPrediction, PriceKind, PricePrediction, TextLine
+from menubench.schema import BBox, LinkDecision, MenuPrediction, PriceKind, PricePrediction, TextLine
 
 
 @dataclass(frozen=True)
@@ -37,9 +40,11 @@ class View:
 
 
 VIEWS = (
-    View(left=0.55, up=4, down=1.5, temperature=0.0),
-    View(left=1.0, up=5, down=2.5, temperature=0.3),
-    View(left=0.75, up=7, down=3, temperature=0.6),
+    # Mostly up and to the left: where names sit relative to prices on nearly every menu.
+    View(left=0.55, up=4, down=0.4, temperature=0.0),
+    # Wide and symmetric: sees the neighbours too, so it disagrees with the first view when the layout is ambiguous.
+    View(left=1.0, up=4, down=3, temperature=0.3),
+    View(left=0.75, up=7, down=0.4, temperature=0.6),
 )
 
 
@@ -130,6 +135,24 @@ def _vote(votes: list[Vote]) -> tuple[Vote, float]:
     return winner, len(best) / len(votes)
 
 
+def _placement(name: str | None, cand: Candidate, lines: list[TextLine]) -> dict[str, float]:
+    """Where the chosen name sits relative to the price: same row, above, or below (suspicious)."""
+    if cand.merged_name and _same(name, cand.merged_name):
+        return {"name_same_row": 1.0, "name_above": 0.0, "name_below": 0.0}
+    hits = [ln for ln in lines if _same(name, ln.text)]
+    if not hits:
+        return {"name_same_row": 0.0, "name_above": 0.0, "name_below": 0.0}
+    price_cy = (cand.bbox.y0 + cand.bbox.y1) / 2
+    height = max(cand.bbox.y1 - cand.bbox.y0, 1e-4)
+    nearest = min(hits, key=lambda ln: abs((ln.bbox.y0 + ln.bbox.y1) / 2 - price_cy))
+    dy = ((nearest.bbox.y0 + nearest.bbox.y1) / 2 - price_cy) / height
+    return {
+        "name_same_row": float(abs(dy) < 0.6),
+        "name_above": float(dy <= -0.6),
+        "name_below": float(dy >= 0.6),
+    }
+
+
 def _column_support(cand: Candidate, cands: list[Candidate]) -> float:
     """Prices on menus line up: right edges in a column or rows with several sizes."""
     aligned = sum(1 for c in cands if c is not cand and abs(c.bbox.x1 - cand.bbox.x1) < 0.015)
@@ -139,6 +162,11 @@ def _column_support(cand: Candidate, cands: list[Candidate]) -> float:
 class FullPipeline(Pipeline):
     name = "full"
     roles = ("ocr", "attribution")
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        path = self.params.get("calibrator")
+        self.calibrator = Calibrator.load(Path(path)) if path else None
 
     def estimate_calls(self, pages: int, prices_hint: int) -> list[tuple[str, int, float, int]]:
         passes = int(self.params.get("passes", 2))
@@ -212,6 +240,7 @@ class FullPipeline(Pipeline):
             "has_currency": float(cand.parsed.currency is not None),
             "name_in_ocr": float(any(_same(winner.item, ln.text) for ln in lines)),
             "geometry_fallback": float(fallback),
+            **_placement(winner.item, cand, lines),
         }
         trace = {
             "price": cand.text,
@@ -227,6 +256,11 @@ class FullPipeline(Pipeline):
         if winner.size and kind is PriceKind.SINGLE:
             kind = PriceKind.SIZE_VARIANT
         confidence = heuristic_confidence(signals)
+        auto = None
+        if self.calibrator is not None:
+            confidence = round(self.calibrator.predict(signals), 4)
+            threshold = self.calibrator.threshold(float(self.params.get("target_risk", 0.01)))
+            auto = threshold is not None and confidence >= threshold
         prediction = PricePrediction(
             page=lines[cand.line].page,
             value=cand.parsed.value,
@@ -237,6 +271,7 @@ class FullPipeline(Pipeline):
             name=winner.item,
             confidence=confidence,
             signals=signals,
+            auto=auto,
         )
         return prediction, trace
 
@@ -272,14 +307,48 @@ class FullPipeline(Pipeline):
                 if prediction is not None:
                     prices.append(prediction)
             await log.stage("attribution", page=page_no, decisions=decisions)
+        links = await self._link(menu, prices, log, spend) if self.params.get("link") and menu.catalog else ()
         return MenuPrediction(
             menu_id=menu.menu_id,
             config=self.name,
             prices=tuple(prices),
+            links=links,
             lines=tuple(all_lines),
             cost_usd=spend.usd,
             latency_s=time.perf_counter() - started,
         )
+
+    async def _link(
+        self, menu: MenuInput, prices: list[PricePrediction], log: StageLog, spend: Spend
+    ) -> tuple[LinkDecision | None, ...]:
+        mode = str(self.params["link"])
+        decisions: list[LinkDecision]
+        if mode == "llm_direct":
+            spec = self.models.get("linker", self.models["attribution"])
+            results = await asyncio.gather(*(link_direct(self.client, spec, p.name, menu.catalog) for p in prices))
+            decisions = [d for d, _ in results]
+            spend.usd += sum(c for _, c in results)
+        elif mode == "strict":
+            cfg = LinkerConfig(**self.params.get("linker", {}))
+            decisions = [decide(p.name, menu.catalog, cfg, price_trusted=p.auto is not False) for p in prices]
+            arbiter = self.models.get("arbiter")
+            if arbiter is not None:
+                results = await asyncio.gather(
+                    *(
+                        arbitrate(self.client, arbiter, p.name or "", str(p.value), d, menu.catalog)
+                        for p, d in zip(prices, decisions, strict=True)
+                    )
+                )
+                decisions = [d for d, _ in results]
+                spend.usd += sum(c for _, c in results)
+        else:
+            raise ValueError(f"unknown link mode {mode!r}")
+        await log.stage(
+            "link",
+            mode=mode,
+            decisions=[{"item": p.name, **d.model_dump(mode="json")} for p, d in zip(prices, decisions, strict=True)],
+        )
+        return tuple(decisions)
 
 
 def heuristic_confidence(s: dict[str, float]) -> float:

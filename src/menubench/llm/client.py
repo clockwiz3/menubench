@@ -7,6 +7,7 @@ import base64
 import hashlib
 import io
 import os
+import random
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -197,7 +198,9 @@ class LLMClient:
         }
         delay = 2.0
         last: str = ""
-        for attempt in range(4):
+        attempts = 7
+        for attempt in range(attempts):
+            wait = delay
             async with self._sem:
                 started = time.perf_counter()
                 try:
@@ -216,11 +219,15 @@ class LLMClient:
                             last = "empty choices"
                     elif r.status_code in (408, 429) or r.status_code >= 500:
                         last = f"HTTP {r.status_code}: {r.text[:300]}"
+                        retry_after = r.headers.get("retry-after", "")
+                        if retry_after.replace(".", "", 1).isdigit():
+                            wait = max(wait, float(retry_after))
                     else:
                         raise LLMError(f"HTTP {r.status_code}: {r.text[:500]}")
-            if attempt < 3:
-                await asyncio.sleep(delay)
-                delay *= 2
+            if attempt < attempts - 1:
+                # Jitter spreads retries of many concurrent calls hitting the same upstream limit.
+                await asyncio.sleep(wait * (0.75 + random.random() / 2))
+                delay = min(delay * 2, 60.0)
         raise LLMError(f"giving up after retries: {last}")
 
     @staticmethod

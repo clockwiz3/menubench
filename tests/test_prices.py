@@ -62,3 +62,30 @@ def test_merged_size_label_is_not_a_name() -> None:
     )
     assert [c.merged_name for c in cands] == [None, "Борщ"]
     assert cands[0].parsed.value == 1150
+
+
+@pytest.mark.parametrize(
+    ("text", "values"),
+    [
+        ('12" $29', ["29"]),
+        ("S 5,75 € M 7,95 € L 8,50 €", ["5.75", "7.95", "8.50"]),
+        ("Борщ ........ 350", ["350"]),
+        ("Борщ · 250 г 350 ₽", ["350"]),
+        ("Пицца 30 см — 8 кусочков", []),
+        ("Комплексный обед с 12:00 до 15:00", []),
+        ("Салат с тунцом 2 шт", []),
+        ("от 300 ₽ Греческий", ["300"]),
+        ("450 ₽ 350 ₽", ["450", "350"]),
+    ],
+)
+def test_find_prices_inside_lines(text: str, values: list[str]) -> None:
+    from menubench.prices import find_prices
+
+    assert [p.value for _, _, p in find_prices(text)] == [Decimal(v) for v in values]
+
+
+def test_phone_numbers_are_not_prices() -> None:
+    from menubench.prices import find_prices
+
+    assert find_prices("Тел. 8 800 555-35-35") == []
+    assert find_prices("Call (555) 214-7788") == []

@@ -992,6 +992,24 @@
       "maximum": 1.0,
       "minimum": 0.0,
       "title": "Confidence"
+     },
+     "signals": {
+      "additionalProperties": {
+       "type": "number"
+      },
+      "type": "object",
+      "title": "Signals"
+     },
+     "auto": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Auto"
      }
     },
     "additionalProperties": false,
@@ -1195,6 +1213,61 @@
       "type": "boolean",
       "title": "Has Prices",
       "default": false
+     },
+     "ece": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ece"
+     },
+     "auto_recall": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Auto Recall"
+     },
+     "auto_risk": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Auto Risk"
+     },
+     "wrong_link_rate": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Wrong Link Rate"
+     },
+     "hint_top3": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Hint Top3"
      }
     },
     "type": "object",

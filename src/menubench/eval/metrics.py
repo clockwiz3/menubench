@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import itertools
 import statistics
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
 
+import numpy as np
+
+from menubench.eval.linking import evaluate_linking
 from menubench.eval.match import MenuMatch, Outcome, match_menu
 from menubench.eval.ocr import evaluate_ocr
 from menubench.schema import MenuAnnotation, MenuPrediction
@@ -109,6 +113,21 @@ def evaluate(pairs: Iterable[tuple[MenuAnnotation, MenuPrediction]]) -> dict[str
     }
     result["latency_s"] = {"p50": _percentile(latencies, 50), "p95": _percentile(latencies, 95)}
     result["ocr"] = evaluate_ocr(pairs)
+    result["linking"] = evaluate_linking((ann, pred, m) for (ann, pred), m in zip(pairs, matches, strict=True))
+    result["calibration"] = expected_calibration_error([s.confidence for s in scored], [s.correct for s in scored])
+    decided = [
+        (pred.prices[pm.pred_index].auto, pm.outcome is Outcome.CORRECT)
+        for (_, pred), match in zip(pairs, matches, strict=True)
+        for pm in match.matches
+    ]
+    if any(auto is not None for auto, _ in decided):
+        kept = [ok for auto, ok in decided if auto]
+        result["operating_point"] = {
+            "auto_placed": len(kept),
+            "coverage": round(len(kept) / len(decided), 4) if decided else 0.0,
+            "risk": round(1 - sum(kept) / len(kept), 4) if kept else None,
+            "recall": round(sum(kept) / gt_total, 4) if gt_total else 0.0,
+        }
 
     slices: dict[str, dict[str, list[int]]] = defaultdict(lambda: defaultdict(list))
     for i, (ann, _) in enumerate(pairs):
@@ -142,3 +161,25 @@ def evaluate(pairs: Iterable[tuple[MenuAnnotation, MenuPrediction]]) -> dict[str
         for m, (_, pred) in zip(matches, pairs, strict=True)
     }
     return result
+
+
+def expected_calibration_error(probs: list[float], labels: list[bool], bins: int = 10) -> dict[str, object]:
+    edges = np.linspace(0, 1, bins + 1)
+    rows, ece, n = [], 0.0, len(probs)
+    for lo, hi in itertools.pairwise(edges):
+        idx = [i for i, p in enumerate(probs) if lo <= p < hi or (hi == 1 and p == 1)]
+        if not idx:
+            continue
+        conf = float(np.mean([probs[i] for i in idx]))
+        acc = float(np.mean([labels[i] for i in idx]))
+        ece += len(idx) / n * abs(conf - acc)
+        rows.append(
+            {
+                "lo": round(float(lo), 2),
+                "hi": round(float(hi), 2),
+                "n": len(idx),
+                "confidence": round(conf, 4),
+                "accuracy": round(acc, 4),
+            }
+        )
+    return {"ece": round(ece, 4) if n else None, "bins": rows}

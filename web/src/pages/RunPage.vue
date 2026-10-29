@@ -82,6 +82,38 @@ function open(menu: MenuRow) {
           :hint="`p95 ${seconds(m.latency_s?.p95)}`"
         />
       </div>
+      <div v-if="m.operating_point || m.linking" class="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
+        <template v-if="m.operating_point">
+          <MetricTile
+            label="Auto-placed"
+            :value="pct(m.operating_point.recall)"
+            :hint="`of all prices, at the threshold frozen on dev`"
+          />
+          <MetricTile label="Wrong among auto" :value="pct(m.operating_point.risk)" hint="target ≤ 1%" />
+        </template>
+        <MetricTile
+          label="Calibration error"
+          :value="num(m.calibration?.ece, 3)"
+          hint="ECE, lower is better"
+        />
+        <template v-if="m.linking">
+          <MetricTile
+            label="Wrong links"
+            :value="pct(m.linking.wrong_link_rate)"
+            :hint="`of ${m.linking.links} links`"
+          />
+          <MetricTile
+            label="Linked automatically"
+            :value="pct(m.linking.auto_link_recall)"
+            hint="of linkable prices"
+          />
+          <MetricTile
+            label="Hint has the answer"
+            :value="pct(m.linking.hint_top3)"
+            hint="right item in top 3"
+          />
+        </template>
+      </div>
       <div v-if="m.ocr" class="grid grid-cols-2 gap-3 md:grid-cols-4">
         <MetricTile
           label="OCR text found"

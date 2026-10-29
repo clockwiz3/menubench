@@ -358,6 +358,12 @@ export interface components {
       name?: string | null
       /** Confidence */
       confidence: number
+      /** Signals */
+      signals?: {
+        [key: string]: number
+      }
+      /** Auto */
+      auto?: boolean | null
     }
     /** RunDetail */
     RunDetail: {
@@ -425,6 +431,16 @@ export interface components {
        * @default false
        */
       has_prices: boolean
+      /** Ece */
+      ece?: number | null
+      /** Auto Recall */
+      auto_recall?: number | null
+      /** Auto Risk */
+      auto_risk?: number | null
+      /** Wrong Link Rate */
+      wrong_link_rate?: number | null
+      /** Hint Top3 */
+      hint_top3?: number | null
     }
     /**
      * Source

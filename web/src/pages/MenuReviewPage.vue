@@ -42,7 +42,11 @@ function gtLabel(id: string): string {
 const rows = computed(() => {
   const r = review.value
   if (!r?.prediction) return []
-  return r.outcomes.map((o) => ({ ...o, pred: r.prediction!.prices[o.index]! }))
+  return r.outcomes.map((o) => ({
+    ...o,
+    pred: r.prediction!.prices[o.index]!,
+    link: r.prediction!.links[o.index] ?? null,
+  }))
 })
 
 const boxes = computed<CanvasBox[]>(() => {
@@ -92,6 +96,10 @@ const boxes = computed<CanvasBox[]>(() => {
   return out
 })
 
+const hasLinks = computed(() => !!review.value?.prediction?.links.length)
+const catalog = computed(() => new Map((review.value?.annotation.catalog ?? []).map((c) => [c.id, c.name])))
+const catalogName = (id: string | null | undefined) => (id ? (catalog.value.get(id) ?? id) : '—')
+const LINK_LABEL = { link: 'Linked', hint: 'Hint', abstain: 'Abstain' } as const
 const stages = computed(() => (review.value?.trace?.stages as Record<string, unknown>[] | undefined) ?? [])
 const layerList = [
   { key: 'predictions', label: 'Predictions' },
@@ -192,6 +200,7 @@ const layerList = [
                   <th>Item</th>
                   <th class="text-right">Price</th>
                   <th class="text-right">Conf.</th>
+                  <th v-if="hasLinks">Catalog</th>
                 </tr>
               </thead>
               <tbody>
@@ -210,7 +219,30 @@ const layerList = [
                     </div>
                   </td>
                   <td class="num text-right">{{ row.pred.value }}</td>
-                  <td class="num text-right">{{ num(row.pred.confidence) }}</td>
+                  <td class="num text-right">
+                    {{ num(row.pred.confidence) }}
+                    <div
+                      v-if="row.pred.auto != null"
+                      class="text-xs"
+                      :class="row.pred.auto ? 'text-good' : 'text-ink-3'"
+                    >
+                      {{ row.pred.auto ? 'auto' : 'review' }}
+                    </div>
+                  </td>
+                  <td v-if="hasLinks" class="text-xs">
+                    <template v-if="row.link">
+                      <span class="font-medium">{{ LINK_LABEL[row.link.action] }}</span>
+                      <span v-if="row.link.action === 'link'" class="text-ink-2">
+                        → {{ catalogName(row.link.catalog_id) }}</span
+                      >
+                      <ol v-else-if="row.link.candidates.length" class="mt-0.5 list-decimal pl-4 text-ink-2">
+                        <li v-for="c in row.link.candidates" :key="c.catalog_id">
+                          {{ catalogName(c.catalog_id) }}
+                        </li>
+                      </ol>
+                      <div v-if="row.link.reason" class="mt-0.5 text-ink-3">{{ row.link.reason }}</div>
+                    </template>
+                  </td>
                 </tr>
               </tbody>
             </table>
