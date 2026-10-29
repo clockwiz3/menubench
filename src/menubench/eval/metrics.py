@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from menubench.eval.match import MenuMatch, Outcome, match_menu
+from menubench.eval.ocr import evaluate_ocr
 from menubench.schema import MenuAnnotation, MenuPrediction
 
 RISK_LEVELS = (0.01, 0.02, 0.05)
@@ -107,6 +108,7 @@ def evaluate(pairs: Iterable[tuple[MenuAnnotation, MenuPrediction]]) -> dict[str
         "per_menu_usd": round(statistics.fmean(costs), 6) if costs else 0.0,
     }
     result["latency_s"] = {"p50": _percentile(latencies, 50), "p95": _percentile(latencies, 95)}
+    result["ocr"] = evaluate_ocr(pairs)
 
     slices: dict[str, dict[str, list[int]]] = defaultdict(lambda: defaultdict(list))
     for i, (ann, _) in enumerate(pairs):

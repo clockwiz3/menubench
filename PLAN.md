@@ -197,7 +197,7 @@ menubench/
     src/pages/              # RunsPage, MenuReviewPage, AnnotatePage, TryPage
     src/components/         # BBoxCanvas (просмотр), BBoxEditor (правка), RiskCoverageChart, StageTimeline…
     src/api/                # сгенерированные типы + тонкий клиент
-  prompts/
+  src/menubench/prompts/    # версионированные промпты (*.vN.md)
   configs/                  # YAML конфигураций прогонов и models.yaml
   reports/                  # сгенерированные таблицы и графики для README
   tests/                    # pytest: ядро и API (httpx TestClient)
@@ -222,7 +222,7 @@ menubench/
 | M0 ✅ | Каркас | репо, uv, CI, схема данных, CLI-заглушки, README en/ru | готово |
 | M1 ✅ | Синтетика v0 | 3 шаблона, контент ru/en, рендер с bbox, уровень `clean`; 50 меню | готово |
 | M2 ✅ | Eval-харнесс | метрики + матчинг + отчёт; тесты метрик на игрушечных примерах | готово |
-| M3 | OpenRouter + OCR | клиент, кэш, учёт $; VLM-OCR на 3–5 моделях, таблица OCR recall / IoU / $ | 3 дня |
+| M3 ✅ | OpenRouter + OCR | клиент, кэш, учёт $; VLM-OCR на 3–5 моделях, таблица OCR recall / IoU / $ | готово |
 | M4 | Базовые линии | VLM end-to-end и OCR+эвристики, первая таблица трека A | 2 дня |
 | M5 | Веб: основа + Runs | FastAPI + Vue каркас, генерация типов, CI фронта; таблица лидеров и разбор меню с рамками — сразу как инструмент отладки | 4 дня |
 | M6 | Полный конвейер | детектор, атрибуция с голосованием, тайлинг; события стадий для SSE | 4 дня |

@@ -1,0 +1,6 @@
+name: ocr-gemini31-flash-lite
+pipeline: ocr_only
+split: dev
+limit: 8
+models:
+  ocr: google/gemini-3.1-flash-lite

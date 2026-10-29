@@ -1,0 +1,6 @@
+name: ocr-claude-haiku55
+pipeline: ocr_only
+split: dev
+limit: 8
+models:
+  ocr: anthropic/claude-haiku-5.5

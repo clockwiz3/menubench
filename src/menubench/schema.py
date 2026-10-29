@@ -194,6 +194,7 @@ class MenuPrediction(_Model):
     config: str
     prices: tuple[PricePrediction, ...] = ()
     links: tuple[LinkDecision | None, ...] = ()  # aligned with prices; empty when track B is off
+    lines: tuple[TextLine, ...] = ()  # OCR output when the pipeline has an OCR stage
     cost_usd: float = Field(default=0.0, ge=0)
     latency_s: float = Field(default=0.0, ge=0)
     error: str | None = None  # set when the pipeline failed on this menu

@@ -25,6 +25,13 @@ def format_summary(m: dict[str, Any]) -> str:
         f"cost       ${m['cost']['total_usd']:.4f} total, ${m['cost']['per_menu_usd']:.5f}/menu",
         f"latency    p50 {m['latency_s']['p50']}s  p95 {m['latency_s']['p95']}s",
     ]
+    if m.get("ocr"):
+        o = m["ocr"]
+        lines.append(
+            f"ocr        text {_pct(o['text_recall'])} (prices {_pct(o['price_text_recall'])})"
+            f"  located {_pct(o['line_recall'])} (prices {_pct(o['price_line_recall'])})"
+            f"  CER {o['cer_mean']}  IoU {o['iou_mean']}  ({o['pred_lines']} predicted / {o['gt_lines']} gt)"
+        )
     for dim in ("template", "lang", "augment"):
         for key, s in m["slices"].get(dim, {}).items():
             lines.append(

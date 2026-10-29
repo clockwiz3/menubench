@@ -1,0 +1,6 @@
+name: ocr-gpt5-nano
+pipeline: ocr_only
+split: dev
+limit: 8
+models:
+  ocr: openai/gpt-5-nano

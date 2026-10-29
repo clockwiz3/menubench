@@ -1,0 +1,6 @@
+name: ocr-qwen3vl-30b
+pipeline: ocr_only
+split: dev
+limit: 8
+models:
+  ocr: qwen/qwen3-vl-30b-a3b-instruct

@@ -1,0 +1,6 @@
+name: ocr-qwen3vl-235b
+pipeline: ocr_only
+split: dev
+limit: 8
+models:
+  ocr: qwen/qwen3-vl-235b-a22b-instruct
