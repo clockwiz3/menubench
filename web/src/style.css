@@ -1,0 +1,116 @@
+@import 'tailwindcss';
+
+/* Tokens: light by default, dark from the OS setting unless the viewer picked a theme. */
+:root {
+  color-scheme: light;
+  --surface-0: #f4f4f2;
+  --surface-1: #fcfcfb;
+  --surface-2: #efefec;
+  --ink-1: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #7b7a74;
+  --line: #e1e0d9;
+  --axis: #c3c2b7;
+  --accent: #2a78d6;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --gt: #2a78d6;
+  --ocr: #8a8984;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme='light'])) {
+    color-scheme: dark;
+    --surface-0: #121211;
+    --surface-1: #1a1a19;
+    --surface-2: #242422;
+    --ink-1: #ffffff;
+    --ink-2: #c3c2b7;
+    --ink-3: #8f8e86;
+    --line: #2c2c2a;
+    --axis: #383835;
+    --accent: #3987e5;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --gt: #3987e5;
+    --ocr: #8f8e86;
+  }
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --surface-0: #121211;
+  --surface-1: #1a1a19;
+  --surface-2: #242422;
+  --ink-1: #ffffff;
+  --ink-2: #c3c2b7;
+  --ink-3: #8f8e86;
+  --line: #2c2c2a;
+  --axis: #383835;
+  --accent: #3987e5;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --gt: #3987e5;
+  --ocr: #8f8e86;
+}
+
+@theme inline {
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-ink-1: var(--ink-1);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-good: var(--good);
+  --color-warning: var(--warning);
+  --color-serious: var(--serious);
+  --color-critical: var(--critical);
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--surface-0);
+  color: var(--ink-1);
+}
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.data th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--ink-3);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.data td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+}
+table.data tr.clickable:hover td {
+  background: var(--surface-2);
+  cursor: pointer;
+}

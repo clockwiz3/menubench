@@ -42,7 +42,8 @@ def find_candidates(lines: list[TextLine]) -> list[Candidate]:
             share = max(0.15, min(0.5, (len(line.text) - len(name)) / max(len(line.text), 1)))
             b = line.bbox
             box = BBox(x0=b.x1 - (b.x1 - b.x0) * share, y0=b.y0, x1=b.x1, y1=b.y1)
-            out.append(Candidate(i, parsed, line.text, box, merged_name=name))
+            # "25 см 1 150 р.": the head is a size label, not a dish name.
+            out.append(Candidate(i, parsed, line.text, box, merged_name=None if is_size_label(name) else name))
     return out
 
 

@@ -88,3 +88,27 @@ def report() -> None:
 
     for path in write_reports():
         typer.echo(f"wrote {path}")
+
+
+@app.command()
+def serve(
+    host: Annotated[str, typer.Option(help="Bind address.")] = "127.0.0.1",
+    port: Annotated[int, typer.Option(help="Port.")] = 8000,
+    reload: Annotated[bool, typer.Option(help="Reload on code changes (development).")] = False,
+) -> None:
+    """Start the web app (API + built frontend)."""
+    import uvicorn
+
+    uvicorn.run("menubench.server.app:create_app", factory=True, host=host, port=port, reload=reload)
+
+
+@app.command()
+def openapi(out: Annotated[Path, typer.Option(help="Where to write the schema.")] = Path("web/openapi.json")) -> None:
+    """Export the OpenAPI schema; the frontend generates its TypeScript types from it."""
+    import json
+
+    from menubench.server.app import create_app
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(create_app().openapi(), indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    typer.echo(f"wrote {out}")

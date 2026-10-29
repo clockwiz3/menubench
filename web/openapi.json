@@ -1,0 +1,1307 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "MenuBench",
+  "version": "0.0.1"
+ },
+ "paths": {
+  "/api/runs": {
+   "get": {
+    "tags": [
+     "runs"
+    ],
+    "summary": "List All",
+    "operationId": "list_all_api_runs_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/RunSummary"
+         },
+         "type": "array",
+         "title": "Response List All Api Runs Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/runs/{run_id}": {
+   "get": {
+    "tags": [
+     "runs"
+    ],
+    "summary": "Detail",
+    "operationId": "detail_api_runs__run_id__get",
+    "parameters": [
+     {
+      "name": "run_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Run Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RunDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/runs/{run_id}/menus/{menu_id}": {
+   "get": {
+    "tags": [
+     "runs"
+    ],
+    "summary": "Review",
+    "operationId": "review_api_runs__run_id__menus__menu_id__get",
+    "parameters": [
+     {
+      "name": "run_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Run Id"
+      }
+     },
+     {
+      "name": "menu_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Menu Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MenuReview"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/runs/{run_id}/menus/{menu_id}/pages/{page}": {
+   "get": {
+    "tags": [
+     "runs"
+    ],
+    "summary": "Page Image",
+    "operationId": "page_image_api_runs__run_id__menus__menu_id__pages__page__get",
+    "parameters": [
+     {
+      "name": "run_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Run Id"
+      }
+     },
+     {
+      "name": "menu_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Menu Id"
+      }
+     },
+     {
+      "name": "page",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Page"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/health": {
+   "get": {
+    "tags": [
+     "meta"
+    ],
+    "summary": "Health",
+    "operationId": "health_api_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": {
+          "type": "string"
+         },
+         "type": "object",
+         "title": "Response Health Api Health Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "AugmentLevel": {
+    "type": "string",
+    "enum": [
+     "clean",
+     "scan",
+     "photo"
+    ],
+    "title": "AugmentLevel"
+   },
+   "BBox": {
+    "properties": {
+     "x0": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "X0"
+     },
+     "y0": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Y0"
+     },
+     "x1": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "X1"
+     },
+     "y1": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Y1"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "x0",
+     "y0",
+     "x1",
+     "y1"
+    ],
+    "title": "BBox"
+   },
+   "CatalogEntry": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "id",
+     "name"
+    ],
+    "title": "CatalogEntry"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "LinkCandidate": {
+    "properties": {
+     "catalog_id": {
+      "type": "string",
+      "title": "Catalog Id"
+     },
+     "score": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Score"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "catalog_id",
+     "score"
+    ],
+    "title": "LinkCandidate"
+   },
+   "LinkDecision": {
+    "properties": {
+     "action": {
+      "type": "string",
+      "enum": [
+       "link",
+       "hint",
+       "abstain"
+      ],
+      "title": "Action"
+     },
+     "catalog_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Catalog Id"
+     },
+     "candidates": {
+      "items": {
+       "$ref": "#/components/schemas/LinkCandidate"
+      },
+      "type": "array",
+      "title": "Candidates",
+      "default": []
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "action"
+    ],
+    "title": "LinkDecision",
+    "description": "Track B outcome for one predicted price."
+   },
+   "MenuAnnotation": {
+    "properties": {
+     "menu_id": {
+      "type": "string",
+      "title": "Menu Id"
+     },
+     "source": {
+      "$ref": "#/components/schemas/Source"
+     },
+     "lang": {
+      "type": "string",
+      "title": "Lang"
+     },
+     "pages": {
+      "items": {
+       "$ref": "#/components/schemas/Page"
+      },
+      "type": "array",
+      "minItems": 1,
+      "title": "Pages"
+     },
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/MenuItem"
+      },
+      "type": "array",
+      "title": "Items",
+      "default": []
+     },
+     "prices": {
+      "items": {
+       "$ref": "#/components/schemas/PriceAnnotation"
+      },
+      "type": "array",
+      "title": "Prices",
+      "default": []
+     },
+     "catalog": {
+      "items": {
+       "$ref": "#/components/schemas/CatalogEntry"
+      },
+      "type": "array",
+      "title": "Catalog",
+      "default": []
+     },
+     "lines": {
+      "items": {
+       "$ref": "#/components/schemas/TextLine"
+      },
+      "type": "array",
+      "title": "Lines",
+      "default": []
+     },
+     "template": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Template"
+     },
+     "augment": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/AugmentLevel"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "seed": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Seed"
+     },
+     "tags": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Tags",
+      "default": []
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "menu_id",
+     "source",
+     "lang",
+     "pages"
+    ],
+    "title": "MenuAnnotation",
+    "description": "Ground truth for one menu."
+   },
+   "MenuItem": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "page": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Page"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "bbox": {
+      "$ref": "#/components/schemas/BBox"
+     },
+     "section": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Section"
+     },
+     "description": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Description"
+     },
+     "catalog_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Catalog Id"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "id",
+     "page",
+     "name",
+     "bbox"
+    ],
+    "title": "MenuItem"
+   },
+   "MenuPrediction": {
+    "properties": {
+     "menu_id": {
+      "type": "string",
+      "title": "Menu Id"
+     },
+     "config": {
+      "type": "string",
+      "title": "Config"
+     },
+     "prices": {
+      "items": {
+       "$ref": "#/components/schemas/PricePrediction"
+      },
+      "type": "array",
+      "title": "Prices",
+      "default": []
+     },
+     "links": {
+      "items": {
+       "anyOf": [
+        {
+         "$ref": "#/components/schemas/LinkDecision"
+        },
+        {
+         "type": "null"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Links",
+      "default": []
+     },
+     "lines": {
+      "items": {
+       "$ref": "#/components/schemas/TextLine"
+      },
+      "type": "array",
+      "title": "Lines",
+      "default": []
+     },
+     "cost_usd": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Cost Usd",
+      "default": 0.0
+     },
+     "latency_s": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Latency S",
+      "default": 0.0
+     },
+     "error": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Error"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "menu_id",
+     "config"
+    ],
+    "title": "MenuPrediction"
+   },
+   "MenuReview": {
+    "properties": {
+     "run_id": {
+      "type": "string",
+      "title": "Run Id"
+     },
+     "menu_id": {
+      "type": "string",
+      "title": "Menu Id"
+     },
+     "annotation": {
+      "$ref": "#/components/schemas/MenuAnnotation"
+     },
+     "prediction": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/MenuPrediction"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "outcomes": {
+      "items": {
+       "$ref": "#/components/schemas/PredictionView"
+      },
+      "type": "array",
+      "title": "Outcomes"
+     },
+     "missed": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Missed"
+     },
+     "trace": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Trace"
+     },
+     "prev_menu": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prev Menu"
+     },
+     "next_menu": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Next Menu"
+     }
+    },
+    "type": "object",
+    "required": [
+     "run_id",
+     "menu_id",
+     "annotation",
+     "prediction",
+     "outcomes",
+     "missed",
+     "trace",
+     "prev_menu",
+     "next_menu"
+    ],
+    "title": "MenuReview"
+   },
+   "MenuRow": {
+    "properties": {
+     "menu_id": {
+      "type": "string",
+      "title": "Menu Id"
+     },
+     "template": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Template"
+     },
+     "lang": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lang"
+     },
+     "gt": {
+      "type": "integer",
+      "title": "Gt"
+     },
+     "pred": {
+      "type": "integer",
+      "title": "Pred"
+     },
+     "tp": {
+      "type": "integer",
+      "title": "Tp"
+     },
+     "pair_tp": {
+      "type": "integer",
+      "title": "Pair Tp"
+     },
+     "errors": {
+      "type": "integer",
+      "title": "Errors"
+     },
+     "cost_usd": {
+      "type": "number",
+      "title": "Cost Usd"
+     },
+     "latency_s": {
+      "type": "number",
+      "title": "Latency S"
+     }
+    },
+    "type": "object",
+    "required": [
+     "menu_id",
+     "gt",
+     "pred",
+     "tp",
+     "pair_tp",
+     "errors",
+     "cost_usd",
+     "latency_s"
+    ],
+    "title": "MenuRow"
+   },
+   "Outcome": {
+    "type": "string",
+    "enum": [
+     "correct",
+     "wrong_name",
+     "crossed",
+     "spurious"
+    ],
+    "title": "Outcome"
+   },
+   "Page": {
+    "properties": {
+     "index": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Index"
+     },
+     "width": {
+      "type": "integer",
+      "exclusiveMinimum": 0.0,
+      "title": "Width"
+     },
+     "height": {
+      "type": "integer",
+      "exclusiveMinimum": 0.0,
+      "title": "Height"
+     },
+     "image": {
+      "type": "string",
+      "title": "Image"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "index",
+     "width",
+     "height",
+     "image"
+    ],
+    "title": "Page"
+   },
+   "PredictionView": {
+    "properties": {
+     "index": {
+      "type": "integer",
+      "title": "Index"
+     },
+     "outcome": {
+      "$ref": "#/components/schemas/Outcome"
+     },
+     "gt_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Gt Id"
+     },
+     "gt_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Gt Name"
+     },
+     "iou": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Iou"
+     }
+    },
+    "type": "object",
+    "required": [
+     "index",
+     "outcome",
+     "gt_id",
+     "gt_name",
+     "iou"
+    ],
+    "title": "PredictionView"
+   },
+   "PriceAnnotation": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "page": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Page"
+     },
+     "value": {
+      "type": "string",
+      "title": "Value"
+     },
+     "value_max": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value Max"
+     },
+     "currency": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Currency"
+     },
+     "kind": {
+      "$ref": "#/components/schemas/PriceKind",
+      "default": "single"
+     },
+     "size_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Size Label"
+     },
+     "bbox": {
+      "$ref": "#/components/schemas/BBox"
+     },
+     "item_ids": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Item Ids",
+      "default": []
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "id",
+     "page",
+     "value",
+     "bbox"
+    ],
+    "title": "PriceAnnotation"
+   },
+   "PriceKind": {
+    "type": "string",
+    "enum": [
+     "single",
+     "size_variant",
+     "range",
+     "from",
+     "crossed"
+    ],
+    "title": "PriceKind"
+   },
+   "PricePrediction": {
+    "properties": {
+     "page": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Page"
+     },
+     "value": {
+      "type": "string",
+      "title": "Value"
+     },
+     "value_max": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value Max"
+     },
+     "currency": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Currency"
+     },
+     "kind": {
+      "$ref": "#/components/schemas/PriceKind",
+      "default": "single"
+     },
+     "bbox": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/BBox"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "confidence": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "page",
+     "value",
+     "confidence"
+    ],
+    "title": "PricePrediction"
+   },
+   "RunDetail": {
+    "properties": {
+     "summary": {
+      "$ref": "#/components/schemas/RunSummary"
+     },
+     "config": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Config"
+     },
+     "metrics": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Metrics"
+     },
+     "menus": {
+      "items": {
+       "$ref": "#/components/schemas/MenuRow"
+      },
+      "type": "array",
+      "title": "Menus"
+     }
+    },
+    "type": "object",
+    "required": [
+     "summary",
+     "config",
+     "metrics",
+     "menus"
+    ],
+    "title": "RunDetail"
+   },
+   "RunSummary": {
+    "properties": {
+     "run_id": {
+      "type": "string",
+      "title": "Run Id"
+     },
+     "config_name": {
+      "type": "string",
+      "title": "Config Name"
+     },
+     "pipeline": {
+      "type": "string",
+      "title": "Pipeline"
+     },
+     "models": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "type": "object",
+      "title": "Models"
+     },
+     "dataset": {
+      "type": "string",
+      "title": "Dataset"
+     },
+     "split": {
+      "type": "string",
+      "title": "Split"
+     },
+     "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Started At"
+     },
+     "menus": {
+      "type": "integer",
+      "title": "Menus"
+     },
+     "errors": {
+      "type": "integer",
+      "title": "Errors"
+     },
+     "cost_usd": {
+      "type": "number",
+      "title": "Cost Usd"
+     },
+     "price_f1": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Price F1"
+     },
+     "pair_f1": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pair F1"
+     },
+     "name_accuracy": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Accuracy"
+     },
+     "aurc": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Aurc"
+     },
+     "safe_recall_1": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Safe Recall 1"
+     },
+     "safe_recall_5": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Safe Recall 5"
+     },
+     "ocr_text_recall": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ocr Text Recall"
+     },
+     "ocr_line_recall": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ocr Line Recall"
+     },
+     "per_menu_usd": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Per Menu Usd"
+     },
+     "latency_p50": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latency P50"
+     },
+     "has_prices": {
+      "type": "boolean",
+      "title": "Has Prices",
+      "default": false
+     }
+    },
+    "type": "object",
+    "required": [
+     "run_id",
+     "config_name",
+     "pipeline",
+     "models",
+     "dataset",
+     "split",
+     "started_at",
+     "menus",
+     "errors",
+     "cost_usd"
+    ],
+    "title": "RunSummary"
+   },
+   "Source": {
+    "type": "string",
+    "enum": [
+     "synthetic",
+     "real"
+    ],
+    "title": "Source"
+   },
+   "TextLine": {
+    "properties": {
+     "page": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Page"
+     },
+     "text": {
+      "type": "string",
+      "title": "Text"
+     },
+     "bbox": {
+      "$ref": "#/components/schemas/BBox"
+     },
+     "role": {
+      "$ref": "#/components/schemas/TextRole",
+      "default": "other"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "page",
+     "text",
+     "bbox"
+    ],
+    "title": "TextLine",
+    "description": "One visual line of text. Synthetic menus know every line exactly; used to score OCR."
+   },
+   "TextRole": {
+    "type": "string",
+    "enum": [
+     "title",
+     "section",
+     "item",
+     "description",
+     "price",
+     "size",
+     "other"
+    ],
+    "title": "TextRole"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   }
+  }
+ }
+}

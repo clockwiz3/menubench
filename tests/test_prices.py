@@ -50,3 +50,15 @@ def test_split_trailing_price() -> None:
     assert split_trailing_price("Пицца 30 см — 8 кусочков") is None
     assert split_trailing_price("Порция 250 г") is None
     assert split_trailing_price("350 ₽") is None
+
+
+def test_merged_size_label_is_not_a_name() -> None:
+    from menubench.detect import find_candidates
+    from menubench.schema import BBox, TextLine
+
+    box = BBox(x0=0.1, y0=0.1, x1=0.5, y1=0.12)
+    cands = find_candidates(
+        [TextLine(page=0, text="25 см 1 150 р.", bbox=box), TextLine(page=0, text="Борщ 350 ₽", bbox=box)]
+    )
+    assert [c.merged_name for c in cands] == [None, "Борщ"]
+    assert cands[0].parsed.value == 1150

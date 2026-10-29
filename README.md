@@ -59,6 +59,20 @@ uv run pytest
 
 Copy `.env.example` to `.env` and set `OPENROUTER_API_KEY` for live runs.
 
+## Web app
+
+```bash
+cd web && npm ci && npm run build && cd ..
+uv run menubench serve          # http://127.0.0.1:8000
+```
+
+- **Runs** — leaderboard over every evaluated run, per-run metrics, risk–coverage curve, slices.
+- **Menu review** — the page with ground truth, predictions colored by outcome (correct, wrong item, old price,
+  not on the menu, missed), OCR lines and the raw output of every pipeline stage.
+
+For frontend development run `npm run dev` in `web/` next to `menubench serve`; TypeScript types for the API
+are generated from the FastAPI schema (`menubench openapi` → `npm run gen:api`).
+
 ## License
 
 MIT

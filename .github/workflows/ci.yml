@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  check:
+  python:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,3 +17,28 @@ jobs:
       - run: uv run ruff format --check
       - run: uv run mypy
       - run: uv run pytest
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: API types are in sync with the backend
+        run: |
+          uv run --project .. menubench openapi --out openapi.json
+          npm run gen:api
+          git diff --exit-code -- openapi.json src/api/schema.d.ts
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
