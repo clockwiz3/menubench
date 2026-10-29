@@ -171,6 +171,10 @@ def _summary(stage: str, data: dict[str, Any]) -> dict[str, Any]:
             "decided": len(decisions),
             "rejected": sum(d.get("status") in ("not_price", "old_price") for d in decisions),
         }
+    if stage == "e2e":
+        return {"prices": len(data.get("prices", []))}
+    if stage == "second_opinion":
+        return {k: data.get(k) for k in ("agreed", "reader_only", "verifier_prices")}
     if stage == "price":
         return {k: data.get(k) for k in ("done", "total", "item")}
     if stage == "error":

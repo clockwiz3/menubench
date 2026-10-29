@@ -1,0 +1,15 @@
+# Ablation: same reader and verifier runs, but calibrated on the reader's own confidence only.
+name: ablation-reader-confidence-only
+pipeline: second_opinion
+split: dev
+budget_usd: 3.0
+llm_concurrency: 8
+models:
+  vlm: anthropic/claude-haiku-5.5
+  ocr: google/gemini-2.5-flash-lite
+  attribution: google/gemini-2.5-flash-lite
+  arbiter: google/gemini-2.5-flash-lite
+params:
+  link: strict
+  calibrator: configs/calibration/reader-only-claude.json
+  target_risk: 0.01

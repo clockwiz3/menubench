@@ -15,70 +15,8 @@
   ],
   "prediction": {
    "menu_id": "syn-42-0076",
-   "config": "full-gemini25-flash-lite-cal",
+   "config": "second-opinion-claude-cal",
    "prices": [
-    {
-     "page": 0,
-     "value": "110",
-     "value_max": null,
-     "currency": "RUB",
-     "kind": "single",
-     "bbox": {
-      "x0": 0.92,
-      "y0": 0.187,
-      "x1": 0.965,
-      "y1": 0.207
-     },
-     "name": "Лимонад свежевыжатый",
-     "confidence": 0.9562,
-     "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.95,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 1.0,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
-     },
-     "auto": false
-    },
-    {
-     "page": 0,
-     "value": "160",
-     "value_max": null,
-     "currency": "RUB",
-     "kind": "single",
-     "bbox": {
-      "x0": 0.92,
-      "y0": 0.221,
-      "x1": 0.965,
-      "y1": 0.241
-     },
-     "name": "Сок апельсиновый",
-     "confidence": 0.9523,
-     "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.9,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 1.0,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
-     },
-     "auto": false
-    },
     {
      "page": 0,
      "value": "380",
@@ -86,27 +24,21 @@
      "currency": "RUB",
      "kind": "size_variant",
      "bbox": {
-      "x0": 0.333,
-      "y0": 0.236,
-      "x1": 0.37956153846153845,
-      "y1": 0.257
+      "x0": 0.335,
+      "y0": 0.237,
+      "x1": 0.381,
+      "y1": 0.258
      },
      "name": "Какао ванильный",
-     "confidence": 0.9108,
+     "confidence": 0.6915,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.9,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.95,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
      "auto": false
     },
@@ -117,27 +49,21 @@
      "currency": "RUB",
      "kind": "size_variant",
      "bbox": {
-      "x0": 0.3852692307692308,
-      "y0": 0.236,
-      "x1": 0.43183076923076924,
-      "y1": 0.257
+      "x0": 0.387,
+      "y0": 0.237,
+      "x1": 0.433,
+      "y1": 0.258
      },
      "name": "Какао ванильный",
-     "confidence": 0.9108,
+     "confidence": 0.6915,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.9,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.95,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
      "auto": false
     },
@@ -148,58 +74,21 @@
      "currency": "RUB",
      "kind": "size_variant",
      "bbox": {
-      "x0": 0.43753846153846154,
-      "y0": 0.236,
-      "x1": 0.484,
-      "y1": 0.257
+      "x0": 0.439,
+      "y0": 0.237,
+      "x1": 0.485,
+      "y1": 0.258
      },
      "name": "Какао ванильный",
-     "confidence": 0.9108,
+     "confidence": 0.6928,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.95,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
-     },
-     "auto": false
-    },
-    {
-     "page": 0,
-     "value": "90",
-     "value_max": null,
-     "currency": "RUB",
-     "kind": "single",
-     "bbox": {
-      "x0": 0.925,
-      "y0": 0.255,
-      "x1": 0.965,
-      "y1": 0.275
-     },
-     "name": "Компот",
-     "confidence": 0.9562,
-     "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.95,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 1.0,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.9625,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
      "auto": false
     },
@@ -208,29 +97,23 @@
      "value": "370",
      "value_max": null,
      "currency": "RUB",
-     "kind": "single",
+     "kind": "size_variant",
      "bbox": {
-      "x0": 0.333,
-      "y0": 0.271,
-      "x1": 0.37956153846153845,
-      "y1": 0.291
+      "x0": 0.335,
+      "y0": 0.272,
+      "x1": 0.381,
+      "y1": 0.292
      },
      "name": "Эспрессо",
-     "confidence": 0.9108,
+     "confidence": 0.6915,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.9,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.95,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
      "auto": false
     },
@@ -241,27 +124,21 @@
      "currency": "RUB",
      "kind": "size_variant",
      "bbox": {
-      "x0": 0.3852692307692308,
-      "y0": 0.271,
-      "x1": 0.43183076923076924,
-      "y1": 0.291
+      "x0": 0.387,
+      "y0": 0.272,
+      "x1": 0.433,
+      "y1": 0.292
      },
      "name": "Эспрессо",
-     "confidence": 0.9108,
+     "confidence": 0.6915,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.9,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.95,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
      "auto": false
     },
@@ -272,58 +149,21 @@
      "currency": "RUB",
      "kind": "size_variant",
      "bbox": {
-      "x0": 0.43753846153846154,
-      "y0": 0.271,
-      "x1": 0.484,
-      "y1": 0.291
+      "x0": 0.439,
+      "y0": 0.272,
+      "x1": 0.485,
+      "y1": 0.292
      },
      "name": "Эспрессо",
-     "confidence": 0.9108,
+     "confidence": 0.6928,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.95,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
-     },
-     "auto": false
-    },
-    {
-     "page": 0,
-     "value": "140",
-     "value_max": null,
-     "currency": "RUB",
-     "kind": "single",
-     "bbox": {
-      "x0": 0.92,
-      "y0": 0.289,
-      "x1": 0.965,
-      "y1": 0.309
-     },
-     "name": "Морс клюквенный в чайнике",
-     "confidence": 0.9523,
-     "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.9,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 1.0,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.9625,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
      "auto": false
     },
@@ -332,29 +172,23 @@
      "value": "250",
      "value_max": null,
      "currency": "RUB",
-     "kind": "single",
+     "kind": "size_variant",
      "bbox": {
-      "x0": 0.333,
-      "y0": 0.305,
-      "x1": 0.37956153846153845,
-      "y1": 0.326
+      "x0": 0.335,
+      "y0": 0.306,
+      "x1": 0.381,
+      "y1": 0.325
      },
      "name": "Флэт уайт",
-     "confidence": 0.9108,
+     "confidence": 0.6915,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.9,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.95,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
      "auto": false
     },
@@ -363,29 +197,23 @@
      "value": "330",
      "value_max": null,
      "currency": "RUB",
-     "kind": "single",
+     "kind": "size_variant",
      "bbox": {
-      "x0": 0.3852692307692308,
-      "y0": 0.305,
-      "x1": 0.43183076923076924,
-      "y1": 0.326
+      "x0": 0.387,
+      "y0": 0.306,
+      "x1": 0.433,
+      "y1": 0.325
      },
      "name": "Флэт уайт",
-     "confidence": 0.9108,
+     "confidence": 0.6928,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.95,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.9625,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
      "auto": false
     },
@@ -394,60 +222,23 @@
      "value": "410",
      "value_max": null,
      "currency": "RUB",
-     "kind": "single",
-     "bbox": {
-      "x0": 0.43753846153846154,
-      "y0": 0.305,
-      "x1": 0.484,
-      "y1": 0.326
-     },
-     "name": "Флэт уайт",
-     "confidence": 0.9108,
-     "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.95,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
-     },
-     "auto": false
-    },
-    {
-     "page": 0,
-     "value": "140",
-     "value_max": null,
-     "currency": "RUB",
      "kind": "size_variant",
      "bbox": {
-      "x0": 0.92,
-      "y0": 0.323,
-      "x1": 0.965,
-      "y1": 0.343
+      "x0": 0.439,
+      "y0": 0.306,
+      "x1": 0.485,
+      "y1": 0.325
      },
-     "name": "Вода",
-     "confidence": 0.8569,
+     "name": "Флэт уайт",
+     "confidence": 0.6928,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.95,
-      "geometry_agrees": 0.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 1.0,
-      "has_currency": 1.0,
-      "name_in_ocr": 0.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 0.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.9625,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
      "auto": false
     },
@@ -456,29 +247,23 @@
      "value": "219",
      "value_max": null,
      "currency": "RUB",
-     "kind": "single",
+     "kind": "size_variant",
      "bbox": {
-      "x0": 0.333,
-      "y0": 0.339,
-      "x1": 0.37956153846153845,
+      "x0": 0.335,
+      "y0": 0.341,
+      "x1": 0.381,
       "y1": 0.36
      },
      "name": "Капучино",
-     "confidence": 0.9108,
+     "confidence": 0.6928,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.95,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.9625,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
      "auto": false
     },
@@ -487,29 +272,23 @@
      "value": "280",
      "value_max": null,
      "currency": "RUB",
-     "kind": "single",
+     "kind": "size_variant",
      "bbox": {
-      "x0": 0.3852692307692308,
-      "y0": 0.339,
-      "x1": 0.43183076923076924,
+      "x0": 0.387,
+      "y0": 0.341,
+      "x1": 0.433,
       "y1": 0.36
      },
      "name": "Капучино",
-     "confidence": 0.9108,
+     "confidence": 0.6804,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.95,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.9625,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 1.0,
+      "reader_has_box": 1.0
      },
      "auto": false
     },
@@ -518,124 +297,225 @@
      "value": "350",
      "value_max": null,
      "currency": "RUB",
-     "kind": "single",
+     "kind": "size_variant",
      "bbox": {
-      "x0": 0.43753846153846154,
-      "y0": 0.339,
-      "x1": 0.484,
+      "x0": 0.439,
+      "y0": 0.341,
+      "x1": 0.485,
       "y1": 0.36
      },
      "name": "Капучино",
-     "confidence": 0.9108,
+     "confidence": 0.6915,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.9,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 0.75,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.5,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.95,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
      "auto": false
+    },
+    {
+     "page": 0,
+     "value": "110",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.92,
+      "y0": 0.186,
+      "x1": 0.965,
+      "y1": 0.209
+     },
+     "name": "Лимонад свежевыжатый",
+     "confidence": 0.9994,
+     "signals": {
+      "reader_conf": 0.95,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.9875,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
+     },
+     "auto": true
+    },
+    {
+     "page": 0,
+     "value": "160",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.92,
+      "y0": 0.219,
+      "x1": 0.965,
+      "y1": 0.243
+     },
+     "name": "Сок апельсиновый",
+     "confidence": 0.9987,
+     "signals": {
+      "reader_conf": 0.95,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.975,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 1.0,
+      "reader_has_box": 1.0
+     },
+     "auto": true
+    },
+    {
+     "page": 0,
+     "value": "90",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.926,
+      "y0": 0.254,
+      "x1": 0.965,
+      "y1": 0.277
+     },
+     "name": "Компот",
+     "confidence": 0.9994,
+     "signals": {
+      "reader_conf": 0.95,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.9875,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
+     },
+     "auto": true
+    },
+    {
+     "page": 0,
+     "value": "140",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.919,
+      "y0": 0.288,
+      "x1": 0.965,
+      "y1": 0.311
+     },
+     "name": "Морс клюквенный в чайнике",
+     "confidence": 0.9987,
+     "signals": {
+      "reader_conf": 0.95,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.975,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 1.0,
+      "reader_has_box": 1.0
+     },
+     "auto": true
+    },
+    {
+     "page": 0,
+     "value": "140",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.919,
+      "y0": 0.321,
+      "x1": 0.965,
+      "y1": 0.344
+     },
+     "name": "Вода",
+     "confidence": 0.9972,
+     "signals": {
+      "reader_conf": 0.95,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.7375,
+      "verifier_agrees_and_confident": 0.0,
+      "value_ambiguous": 1.0,
+      "reader_has_box": 1.0
+     },
+     "auto": true
     },
     {
      "page": 0,
      "value": "280",
      "value_max": null,
      "currency": "RUB",
-     "kind": "size_variant",
+     "kind": "single",
      "bbox": {
-      "x0": 0.92,
-      "y0": 0.411,
+      "x0": 0.919,
+      "y0": 0.41,
       "x1": 0.965,
-      "y1": 0.431
+      "y1": 0.433
      },
      "name": "Киш",
-     "confidence": 0.8569,
+     "confidence": 0.9971,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.9,
-      "geometry_agrees": 0.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 1.0,
-      "has_currency": 1.0,
-      "name_in_ocr": 0.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 0.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.95,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.725,
+      "verifier_agrees_and_confident": 0.0,
+      "value_ambiguous": 1.0,
+      "reader_has_box": 1.0
      },
-     "auto": false
+     "auto": true
     },
     {
      "page": 0,
      "value": "180",
      "value_max": null,
      "currency": "RUB",
-     "kind": "size_variant",
+     "kind": "single",
      "bbox": {
-      "x0": 0.92,
+      "x0": 0.919,
       "y0": 0.444,
       "x1": 0.965,
-      "y1": 0.464
+      "y1": 0.466
      },
      "name": "Маффин",
-     "confidence": 0.8569,
+     "confidence": 0.9972,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.95,
-      "geometry_agrees": 0.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 1.0,
-      "has_currency": 1.0,
-      "name_in_ocr": 0.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 0.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.95,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.7375,
+      "verifier_agrees_and_confident": 0.0,
+      "value_ambiguous": 1.0,
+      "reader_has_box": 1.0
      },
-     "auto": false
+     "auto": true
     },
     {
      "page": 0,
      "value": "180",
      "value_max": null,
      "currency": "RUB",
-     "kind": "size_variant",
+     "kind": "single",
      "bbox": {
-      "x0": 0.92,
+      "x0": 0.919,
       "y0": 0.478,
       "x1": 0.965,
-      "y1": 0.498
+      "y1": 0.5
      },
      "name": "Пирожок с ветчиной и сыром",
-     "confidence": 0.8569,
+     "confidence": 0.9971,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.9,
-      "geometry_agrees": 0.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 1.0,
-      "has_currency": 1.0,
-      "name_in_ocr": 0.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 0.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.95,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.725,
+      "verifier_agrees_and_confident": 0.0,
+      "value_ambiguous": 1.0,
+      "reader_has_box": 1.0
      },
-     "auto": false
+     "auto": true
     },
     {
      "page": 0,
@@ -647,26 +527,20 @@
       "x0": 0.904,
       "y0": 0.511,
       "x1": 0.965,
-      "y1": 0.531
+      "y1": 0.534
      },
      "name": "Круассан шоколадный",
-     "confidence": 0.9562,
+     "confidence": 0.9994,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.95,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 1.0,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.95,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.9875,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 0.0,
+      "reader_has_box": 1.0
      },
-     "auto": false
+     "auto": true
     },
     {
      "page": 0,
@@ -675,70 +549,26 @@
      "currency": "RUB",
      "kind": "single",
      "bbox": {
-      "x0": 0.92,
+      "x0": 0.919,
       "y0": 0.545,
       "x1": 0.965,
-      "y1": 0.565
+      "y1": 0.568
      },
      "name": "Синнабон",
-     "confidence": 0.9523,
+     "confidence": 0.9987,
      "signals": {
-      "agreement": 1.0,
-      "votes": 2.0,
-      "model_conf": 0.9,
-      "geometry_agrees": 1.0,
-      "geometry_rule_row": 1.0,
-      "merged_line": 0.0,
-      "column_support": 1.0,
-      "has_currency": 1.0,
-      "name_in_ocr": 1.0,
-      "geometry_fallback": 0.0,
-      "name_same_row": 1.0,
-      "name_above": 0.0,
-      "name_below": 0.0
+      "reader_conf": 0.95,
+      "verifier_found_price": 1.0,
+      "verifier_agrees_on_item": 1.0,
+      "verifier_conf": 0.975,
+      "verifier_agrees_and_confident": 1.0,
+      "value_ambiguous": 1.0,
+      "reader_has_box": 1.0
      },
-     "auto": false
+     "auto": true
     }
    ],
    "links": [
-    {
-     "action": "hint",
-     "catalog_id": null,
-     "candidates": [
-      {
-       "catalog_id": "c011",
-       "score": 1.0
-      },
-      {
-       "catalog_id": "c007",
-       "score": 0.4
-      },
-      {
-       "catalog_id": "c001",
-       "score": 0.3636
-      }
-     ],
-     "reason": "arbiter: c011 is a direct match with the full name and price."
-    },
-    {
-     "action": "hint",
-     "catalog_id": null,
-     "candidates": [
-      {
-       "catalog_id": "c009",
-       "score": 1.0
-      },
-      {
-       "catalog_id": "c002",
-       "score": 0.6667
-      },
-      {
-       "catalog_id": "c014",
-       "score": 0.6818
-      }
-     ],
-     "reason": "arbiter: The most likely match is a direct transliteration, followed by a non-carbonated version, and then a carbonated version."
-    },
     {
      "action": "hint",
      "catalog_id": null,
@@ -795,25 +625,6 @@
       }
      ],
      "reason": "arbiter: Candidate c017 is a very close match with a minor typo."
-    },
-    {
-     "action": "hint",
-     "catalog_id": null,
-     "candidates": [
-      {
-       "catalog_id": "c010",
-       "score": 1.0
-      },
-      {
-       "catalog_id": "c016",
-       "score": 0.4
-      },
-      {
-       "catalog_id": "c012",
-       "score": 0.2857
-      }
-     ],
-     "reason": "arbiter: The catalog item 'KX-368 Компот' is the most likely match due to the presence of the word 'Компот'."
     },
     {
      "action": "hint",
@@ -877,25 +688,6 @@
      "catalog_id": null,
      "candidates": [
       {
-       "catalog_id": "c003",
-       "score": 1.0
-      },
-      {
-       "catalog_id": "c009",
-       "score": 0.381
-      },
-      {
-       "catalog_id": "c014",
-       "score": 0.3571
-      }
-     ],
-     "reason": "arbiter: Candidate c003 is a direct abbreviation of the menu item."
-    },
-    {
-     "action": "hint",
-     "catalog_id": null,
-     "candidates": [
-      {
        "catalog_id": "c020",
        "score": 1.0
       }
@@ -923,17 +715,6 @@
       }
      ],
      "reason": "arbiter: The catalog item 'c020' is a direct match for 'Флэт уайт' with a portion size."
-    },
-    {
-     "action": "hint",
-     "catalog_id": null,
-     "candidates": [
-      {
-       "catalog_id": "c006",
-       "score": 1.0
-      }
-     ],
-     "reason": "arbiter: The catalog entry is an exact match for the menu item."
     },
     {
      "action": "hint",
@@ -993,8 +774,95 @@
      "reason": "arbiter: The closest matches are 'Капучино' and 'Капчуино классический', both clearly related to cappuccino."
     },
     {
-     "action": "hint",
-     "catalog_id": null,
+     "action": "link",
+     "catalog_id": "c011",
+     "candidates": [
+      {
+       "catalog_id": "c011",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c007",
+       "score": 0.4
+      },
+      {
+       "catalog_id": "c001",
+       "score": 0.3636
+      }
+     ],
+     "reason": null
+    },
+    {
+     "action": "link",
+     "catalog_id": "c009",
+     "candidates": [
+      {
+       "catalog_id": "c009",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c014",
+       "score": 0.6818
+      },
+      {
+       "catalog_id": "c002",
+       "score": 0.6667
+      }
+     ],
+     "reason": null
+    },
+    {
+     "action": "link",
+     "catalog_id": "c010",
+     "candidates": [
+      {
+       "catalog_id": "c010",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c016",
+       "score": 0.4
+      },
+      {
+       "catalog_id": "c012",
+       "score": 0.2857
+      }
+     ],
+     "reason": null
+    },
+    {
+     "action": "link",
+     "catalog_id": "c003",
+     "candidates": [
+      {
+       "catalog_id": "c003",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c009",
+       "score": 0.381
+      },
+      {
+       "catalog_id": "c014",
+       "score": 0.3571
+      }
+     ],
+     "reason": null
+    },
+    {
+     "action": "link",
+     "catalog_id": "c006",
+     "candidates": [
+      {
+       "catalog_id": "c006",
+       "score": 1.0
+      }
+     ],
+     "reason": null
+    },
+    {
+     "action": "link",
+     "catalog_id": "c005",
      "candidates": [
       {
        "catalog_id": "c005",
@@ -1009,11 +877,11 @@
        "score": 0.2963
       }
      ],
-     "reason": "arbiter: c005 is an exact match for 'Киш' in uppercase."
+     "reason": null
     },
     {
-     "action": "hint",
-     "catalog_id": null,
+     "action": "link",
+     "catalog_id": "c015",
      "candidates": [
       {
        "catalog_id": "c015",
@@ -1028,7 +896,7 @@
        "score": 0.2857
       }
      ],
-     "reason": "arbiter: The candidate 'GOR-149 Maffin' is the most likely match due to the direct transliteration of 'Маффин' to 'Maffin'."
+     "reason": null
     },
     {
      "action": "hint",
@@ -1050,8 +918,8 @@
      "reason": "arbiter: Candidate c001 is the most likely match due to the presence of 'ветчиной и сыром' (ham and cheese) and a similar product type (Sinnabon, which can refer to a type of pastry)."
     },
     {
-     "action": "hint",
-     "catalog_id": null,
+     "action": "link",
+     "catalog_id": "c008",
      "candidates": [
       {
        "catalog_id": "c008",
@@ -1066,11 +934,11 @@
        "score": 0.4737
       }
      ],
-     "reason": "arbiter: Candidate c008 is the most likely match due to the exact name match."
+     "reason": null
     },
     {
-     "action": "hint",
-     "catalog_id": null,
+     "action": "link",
+     "catalog_id": "c004",
      "candidates": [
       {
        "catalog_id": "c004",
@@ -1085,15 +953,15 @@
        "score": 0.5333
       }
      ],
-     "reason": "arbiter: The most likely match is 'c004' due to the exact name and portion size, followed by 'c007' with a similar name and 'c001' which is a transliteration with additional details."
+     "reason": null
     }
    ],
    "lines": [],
-   "cost_usd": 0.004773299999999999,
-   "latency_s": 20.956161100002646,
+   "cost_usd": 0.0063820000000000005,
+   "latency_s": 0.3410299999959534,
    "error": null
   },
   "error": null,
-  "created_at": "2026-10-29T14:55:29.753540Z"
+  "created_at": "2026-10-29T19:23:44.827434Z"
  }
 }

@@ -20,6 +20,9 @@ interface StageEvent {
   prices?: number
   cost_usd?: number
   message?: string
+  agreed?: number
+  reader_only?: number
+  verifier_prices?: number
 }
 
 const { data: limits, error: limitsError } = useAsync(
@@ -91,18 +94,34 @@ function showExample(example: { job: TryJob }) {
 // Live steps, derived from the event stream.
 const steps = computed(() => {
   const by = (s: string) => events.value.filter((e) => e.stage === s)
+  const read = by('e2e').at(-1)
   const ocr = by('ocr').at(-1)
   const detect = by('detect').at(-1)
   const price = by('price').at(-1)
+  const compared = by('second_opinion').at(-1)
   const finished = events.value.some((e) => e.stage === 'done')
   return [
-    { label: 'Reading the menu', detail: ocr ? `${ocr.lines} lines of text` : '', done: !!ocr },
-    { label: 'Finding prices', detail: detect ? `${detect.candidates} candidates` : '', done: !!detect },
     {
-      label: 'Naming the item of each price',
+      label: 'A strong model reads the whole menu',
+      detail: read ? `${read.prices} prices` : '',
+      done: !!read,
+    },
+    { label: 'Second opinion: reading the text (OCR)', detail: ocr ? `${ocr.lines} lines` : '', done: !!ocr },
+    {
+      label: 'Second opinion: finding prices',
+      detail: detect ? `${detect.candidates} candidates` : '',
+      done: !!detect,
+    },
+    {
+      label: 'Second opinion: naming the item of each price',
       detail: price ? `${price.done} of ${price.total}${price.item ? ` · ${price.item}` : ''}` : '',
-      done: finished,
+      done: !!compared || finished,
       progress: price && price.total ? (price.done ?? 0) / price.total : undefined,
+    },
+    {
+      label: 'Comparing the two opinions',
+      detail: compared ? `agree on ${compared.agreed} prices` : '',
+      done: !!compared,
     },
     { label: 'Deciding what is safe to show', detail: finished ? 'done' : '', done: finished },
   ]
@@ -129,9 +148,9 @@ const page = computed(() => job.value?.pages[0])
     <div>
       <h1 class="text-2xl font-semibold tracking-tight">Try it</h1>
       <p class="mt-1 max-w-3xl text-sm text-ink-3">
-        Upload a menu photo. The pipeline reads it, finds prices, names the item of each one and decides which
-        prices are safe to put on a screen without a person checking them. Everything else goes to review: a
-        wrong price on a screen is worse than an empty slot.
+        Upload a menu photo. A strong model reads it; an independent pipeline reads it again its own way.
+        Where both agree with enough confidence, a price is safe to put on a screen without a person checking
+        it. Everything else goes to review: a wrong price on a screen is worse than an empty slot.
       </p>
     </div>
 

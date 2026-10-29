@@ -119,6 +119,7 @@ def openapi(out: Annotated[Path, typer.Option(help="Where to write the schema.")
 def calibrate(
     run_dir: Annotated[Path, typer.Argument(help="A run on the dev split with a pipeline that records signals.")],
     out: Annotated[Path, typer.Option(help="Where to write the calibrator.")] = Path("configs/calibration/full.json"),
+    features: Annotated[str | None, typer.Option(help="Comma-separated subset of signals (ablations).")] = None,
 ) -> None:
     """Fit confidence calibration and auto-place thresholds on a dev run."""
     from menubench.calibration import expected_calibration_error, fit, labelled
@@ -129,7 +130,8 @@ def calibrate(
         typer.echo("Refusing to calibrate on a non-dev split: thresholds must not see the test data.", err=True)
         raise typer.Exit(code=2)
     samples = labelled(run)
-    calibrator = fit(samples, fitted_on=run.run_id)
+    only = [f.strip() for f in features.split(",")] if features else None
+    calibrator = fit(samples, fitted_on=run.run_id, only=only)
     labels = [ok for _, ok in samples]
     before = expected_calibration_error([p.confidence for p, _ in samples], labels)["ece"]
     after = expected_calibration_error([calibrator.predict(p.signals) for p, _ in samples], labels)["ece"]

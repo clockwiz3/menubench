@@ -47,8 +47,9 @@ def pipelines() -> dict[str, type[Pipeline]]:
     from menubench.pipeline.baselines import OcrHeuristic, VlmEndToEnd
     from menubench.pipeline.full import FullPipeline
     from menubench.pipeline.ocr_only import OcrOnly
+    from menubench.pipeline.second_opinion import SecondOpinion
 
-    return {p.name: p for p in (OcrOnly, VlmEndToEnd, OcrHeuristic, FullPipeline)}
+    return {p.name: p for p in (OcrOnly, VlmEndToEnd, OcrHeuristic, FullPipeline, SecondOpinion)}
 
 
 def build_pipeline(cfg: RunConfig, client: LLMClient) -> Pipeline:

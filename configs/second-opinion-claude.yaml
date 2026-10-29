@@ -1,0 +1,14 @@
+# Claude Haiku reads the menu end to end; the reference pipeline (Gemini 2.5 Flash-Lite) checks it independently.
+# Their agreement is the confidence signal. Uncalibrated; its dev run is what the calibrator is fitted on.
+name: second-opinion-claude
+pipeline: second_opinion
+split: dev
+budget_usd: 3.0
+llm_concurrency: 8
+models:
+  vlm: anthropic/claude-haiku-5.5
+  ocr: google/gemini-2.5-flash-lite
+  attribution: google/gemini-2.5-flash-lite
+  arbiter: google/gemini-2.5-flash-lite
+params:
+  link: strict

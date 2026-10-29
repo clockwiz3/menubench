@@ -2,65 +2,98 @@
 
 **English** · [Русский](README.ru.md)
 
-Benchmark and reference pipeline for extracting prices from restaurant menus — photos, scans and PDFs.
+Benchmark and reference pipeline for extracting prices from restaurant menus — photos, scans and PDFs — and linking
+them to a till catalog, built on one rule: **a wrong price on a screen is worse than an empty slot.**
 
-> A wrong price on a screen is worse than an empty slot.
+**The result:** letting an LLM link menu items to the catalog directly puts the wrong item on **27.1%** of links.
+With a strong model reading the menu, an independent pipeline checking it, calibrated confidence and a strict
+linker, wrong links drop to **1.1%**, and **64%** of all prices go on screens without review at **1.0%** errors —
+with the threshold chosen on the dev split and only then measured on test. Everything else goes to a person,
+with a hint that contains the right catalog item in the top 3 in 100% of cases.
 
-So systems are allowed to say "not sure", and they are scored on it: next to F1, every configuration gets a
-**risk–coverage curve** (errors among the prices it decided to place, at every coverage level), a calibration error,
-and — for the reference pipeline — an operating point frozen on the dev split and then checked on test.
+| approach | pair F1 % | auto-placed % | wrong among auto-placed % | wrong catalog links % | $/menu |
+|---|---|---|---|---|---|
+| Claude reads, pipeline checks, calibrated (v0.2) | 97.2 | 64.0 | 1.0 | 1.1 | 0.0052 |
+| Claude Haiku 5.5, one call | 97.2 | – | – | – | 0.0014 |
+| reference pipeline, calibrated (v0.1) | 70.6 | 4.8 | 15.3 | 6.1 | 0.0041 |
+| reference pipeline + LLM picks the catalog item | 70.6 | 4.8 | 15.3 | 27.1 | 0.0042 |
 
-**Status:** v0.1, frozen on synthetic data (tag `v0.1-frozen`). Real menu photos are the next step: the annotation
-tool is ready, the pipeline is frozen, the real split will be an honest held-out test.
+Synthetic test split: 197 menus, 3 792 prices, 7 layouts (2 never seen during development), clean renders, scans and
+photo-like images, ru and en. **Pair F1** counts a price as correct only if both the value and the item it belongs to
+are right; F1 over prices alone hides the most common real error — the right number under the wrong dish.
+*Auto-placed* is the share of all menu prices placed without review and correct; *wrong among auto-placed* is the
+error rate among those placed. A dash means there is no operating point (no threshold) for that approach.
 
 ![Risk–coverage on the synthetic test split](reports/risk_coverage.png)
 
-## Results
+**Status:** v0.2. The pipeline is frozen before real menu photos are collected; the annotation tool is ready and the
+real split will be an honest held-out test. v0.2 was designed after v0.1's test results were known (see below), so
+those photos are also the clean check for v0.2.
 
-Synthetic test split: **197 menus, 3 792 prices**, 7 layouts (2 never seen during development), clean renders,
-scans and photo-like images, ru and en. All numbers below are on test; nothing was tuned on it.
+## How it got here
 
-### What I learned
+**v0.1 — a pipeline of cheap calls.** VLM OCR, price detection, a crop per price with the price outlined in red,
+two votes and a tie-breaker, calibrated confidence, strict linking. On test it reached 70.6% pair F1; its frozen
+threshold auto-placed 4.8% of prices and **15.3% of those were wrong** — the target was 1%. The dev threshold did not
+survive the shift to test: more photo-like images, and two layouts it had never seen (on the price-left layout it
+confidently took section titles for dish names, 17 of 17 auto-placed prices wrong). Meanwhile one call to Claude
+Haiku 5.5 read the same menus at 97.2% pair F1 for $0.0014.
 
-1. **One call to a strong VLM beats my multi-stage pipeline.** Claude Haiku 5.5 reads the whole menu in one call:
-   97.2% pair F1 (right price *and* right item) at $0.0014 per menu. My pipeline on Gemini 2.5 Flash-Lite gets 70.6%;
-   the same cheap model used end-to-end gets 90.1%. The pipeline was designed around weak models that need
-   OCR, crops and voting; with current models the extra stages mostly add places to lose prices.
-2. **A threshold calibrated on dev did not survive the shift to test.** The pipeline was supposed to auto-place
-   prices with ≤1% errors. On test it auto-placed 4.8% of prices and 15.3% of those were wrong: 8.1% on layouts it
-   had seen, 17 of 17 on the held-out price-left layout (it confidently took section titles for dish names).
-   In-sample calibration error on dev was 0.004; on test it is 0.069. Selective prediction needs calibration data
-   that looks like deployment, plus a detector for "this layout is new".
-3. **Voting works, but only against independent errors.** Single pass 60.3% → two passes 65.7% → plus a
-   tie-breaking third pass 70.6% pair F1. When all passes see the same misleading context they agree on the same
-   wrong answer; diversifying the crops and adding a "name is below the price" signal fixed that one case on dev.
-4. **Catalog linking without safeguards puts wrong prices on screens.** Letting the LLM pick a catalog item
-   directly: 27.1% of links wrong (794 wrong prices on screens). Strict linker trusting every price: 13.9%.
-   Strict linker that links only calibrated-confident prices: 6.1% (10 wrong prices) — at the cost of linking
-   only 6.9% automatically. Hints keep the right item in the top 3 in 99.8% of cases, so the operator's job is a click.
-5. **Self-reported confidence ranges from useful to useless.** Claude's confidence ranks its own errors well
-   (AURC 0.007; with a threshold picked in hindsight it could place 89% of all prices at ≤2% risk); Qwen3-VL-8B's does not (AURC 0.243).
+**v0.2 — the strong model reads, the pipeline checks.** One call is accurate but cannot say where it is wrong.
+The v0.1 pipeline is weaker but fails differently, so its agreement with the reader is a signal. Calibrated on dev
+only, the combined confidence gives a 1% operating point that held on test (64.0% auto-placed, 1.0% wrong).
+
+| calibrated on | AURC ↓ | best possible auto-placed at ≤1% (hindsight) % | auto-placed at the dev threshold % | wrong among them % |
+|---|---|---|---|---|
+| reader confidence + verifier agreement | 0.0104 | 60.3 | 64.0 | 1.0 |
+| reader confidence only | 0.0075 | 26.3 | 0.0 | – (n=0) |
+
+The reader's own confidence ranks test errors at least as well (AURC 0.0075 vs 0.0104), but on dev it never got
+below 1% error at any threshold, so no operating point could be set from it. The verifier's agreement is what made a
+1% threshold chosen on dev possible, and that threshold transferred. Which signal holds better on real photos is the
+open question.
+
+## What I learned
+
+1. **Safeguards, not model choice, decide what reaches a screen.** Direct LLM catalog linking: 27.1% wrong links.
+   Strict linker trusting every price: 13.9%. Strict linker that links only prices both opinions trust: 1.1%.
+2. **A pipeline of cheap calls lost to one strong call.** v0.1 at 70.6% pair F1 against 97.2%; even the same cheap
+   model end-to-end reached 90.1%. Extra stages added places to lose prices more than they added accuracy.
+3. **In-sample calibration is not evidence.** v0.1's calibration error was 0.004 on dev and 0.069 on test, and its
+   threshold failed under shift. Thresholds are now chosen on dev and only measured on test; the CLI refuses
+   to calibrate on any other split.
+4. **Disagreement between differently built systems is a better signal than either one's confidence alone**
+   for setting a threshold you can trust.
+5. **Voting works only against independent errors.** Single pass 60.3% → two passes 65.7% → plus tie-break 70.6%;
+   when every pass sees the same misleading context, they agree on the same wrong answer.
 6. **Every VLM reads menu text; few can point at it.** All OCR candidates recognize 97–99% of lines; only Gemini and
-   Qwen3-VL-235B put ~90% of them in the right place. Geometry-only attribution, 86% on clean renders, collapses
-   to 31.8% once pages are rotated and photographed.
+   Qwen3-VL-235B put ~90% in the right place. Geometry-only attribution (86% on clean renders) collapses to 31.8% on
+   rotated and photographed pages.
+
+A note for comparisons: these menus are synthetic and deliberately hostile — perspective, glare, blur, unseen
+layouts — to find where systems break. Numbers on uniform production menus of a known format are not comparable.
+
+## Results in detail
 
 ### Track A — extraction
 
 | config | price F1 % | pair F1 % | AURC ↓ | ECE ↓ | auto-placed % | wrong among auto-placed % | $/menu | p50 s | menus |
 |---|---|---|---|---|---|---|---|---|---|
 | `e2e-claude-haiku55` | 98.7 | 97.2 | 0.007 | 0.086 | – | – | 0.0014 | 10.7 | 197 |
+| `second-opinion-claude-cal` | 98.7 | 97.2 | 0.010 | 0.097 | 64.0 | 1.0 | 0.0052 | 7.5 | 197 |
 | `e2e-qwen3vl-235b` | 94.0 | 92.7 | 0.052 | 0.043 | – | – | 0.0029 | 35.3 | 197 |
 | `e2e-gemini31-flash-lite` | 93.7 | 92.4 | 0.063 | 0.038 | – | – | 0.0026 | 5.2 | 197 |
 | `e2e-gemini25-flash-lite` | 93.6 | 90.1 | 0.076 | 0.085 | – | – | 0.0005 | 4.8 | 197 |
 | `e2e-qwen3vl-8b` | 81.0 | 78.3 | 0.243 | 0.213 | – | – | 0.0012 | 14.4 | 197 |
-| `full-gemini31-attr-cal` | 87.1 | 73.4 | 0.111 | 0.045 | 0.0 | 100.0 | 0.0164 | 30.0 | 197 |
+| `full-gemini31-attr-cal` | 87.1 | 73.4 | 0.111 | 0.045 | 0.0 | – (n=3) | 0.0164 | 30.0 | 197 |
 | `full-gemini25-flash-lite-cal` | 86.2 | 70.6 | 0.153 | 0.069 | 4.8 | 15.3 | 0.0041 | 30.0 | 197 |
 | `full-gemini25-flash-lite` | 86.2 | 70.6 | 0.155 | 0.101 | – | – | 0.0036 | 6.5 | 197 |
 | `full-gemini25-flash-lite-linkdirect` | 86.2 | 70.6 | 0.153 | 0.069 | 4.8 | 15.3 | 0.0042 | 9.8 | 197 |
 | `heuristic-gemini25-flash-lite` | 85.5 | 31.8 | 0.548 | 0.207 | – | – | 0.0008 | 1.4 | 197 |
 
-`auto-placed` and `wrong among auto-placed` use the threshold frozen on dev for a 1% target. AURC is the area under
-the risk–coverage curve (lower is better), ECE the expected calibration error.
+`auto-placed` and `wrong among auto-placed` use the threshold frozen on dev for a 1% target; "– (n=3)" means too
+few auto-placed prices for a rate. AURC is the area under the risk–coverage curve, ECE the expected calibration error.
+Latency of `second-opinion-claude-cal` was measured on cached calls; live, it is the slower of its two parts (~30 s).
 
 ### Track B — catalog linking
 
@@ -69,9 +102,10 @@ the risk–coverage curve (lower is better), ECE the expected calibration error.
 | `full-gemini25-flash-lite` | 2390 | 13.9 | 93.2 | 99.2 | 96.8 | 331 |
 | `full-gemini25-flash-lite-cal` | 163 | 6.1 | 6.9 | 99.8 | 96.8 | 10 |
 | `full-gemini25-flash-lite-linkdirect` | 2933 | 27.1 | 96.8 | – | 99.1 | 794 |
-| `full-gemini31-attr-cal` | 3 | 100.0 | 0.0 | 100.0 | 96.8 | 3 |
+| `full-gemini31-attr-cal` | 3 | – (n=3) | 0.0 | 100.0 | 96.8 | 3 |
+| `second-opinion-claude-cal` | 1968 | 1.1 | 61.5 | 100.0 | 96.2 | 21 |
 
-### Ablations of the reference pipeline
+### Ablations of the v0.1 pipeline
 
 | variant | pair F1 % | AURC ↓ | ECE ↓ | auto-placed % | wrong among auto % | $/menu |
 |---|---|---|---|---|---|---|
@@ -80,7 +114,7 @@ the risk–coverage curve (lower is better), ECE the expected calibration error.
 | single pass | 60.3 | 0.257 | 0.201 | 6.3 | 20.8 | 0.0025 |
 | hand-set confidence instead of calibration | 70.6 | 0.155 | 0.101 | – | – | 0.0036 |
 
-### Where the reference pipeline breaks
+### Where the v0.1 pipeline breaks
 
 `full-gemini25-flash-lite-cal`
 
@@ -120,7 +154,9 @@ the risk–coverage curve (lower is better), ECE the expected calibration error.
 - Selective prediction: risk–coverage, AURC, safe recall at 1/2/5% risk, ECE, and the frozen operating point.
 - Cost ($/menu from OpenRouter usage accounting) and latency (p50/p95).
 
-## Reference pipeline
+## Pipelines
+
+v0.1, the verifier:
 
 ```
 VLM OCR (tiles, native box format) → price candidates (patterns, inline prices, phone/weight guards)
@@ -129,6 +165,10 @@ VLM OCR (tiles, native box format) → price candidates (patterns, inline prices
   → calibration (logistic + isotonic, dev only) → auto-place or review
   → strict catalog linker → LLM arbiter re-ranks hints, never links → link | hint | abstain
 ```
+
+v0.2, second opinion: Claude Haiku 5.5 reads the whole menu in one call; v0.1 runs independently on the same
+image; per price: did the verifier find the same price, the same item, how sure was each → calibrated
+confidence → auto-place or review → strict linking for trusted prices only.
 
 ## Data
 
@@ -159,16 +199,16 @@ VLM OCR (tiles, native box format) → price candidates (patterns, inline prices
 
 ## What did not work
 
-- Assuming that a pipeline of cheap calls beats one strong call (finding 1).
-- Trusting in-sample calibration (finding 2).
-- Majority voting against correlated errors (finding 3).
+- Assuming that a pipeline of cheap calls beats one strong call (finding 2).
+- Trusting in-sample calibration (finding 3).
+- Majority voting against correlated errors (finding 5).
 - Geometry-only attribution on photographed pages (finding 6).
 - Qwen3-VL-30B, GPT-5-nano and Mistral Small as OCR: they read text but place boxes half a line off or worse.
 
 ## What I would do next
 
-- Use a strong end-to-end model as the primary reader and the crop-attribution pipeline as an independent second
-  opinion; their **disagreement** becomes the main confidence signal.
+- Real photos: re-check the v0.2 operating point, and compare the verifier signal with the reader's own confidence.
+- A cheaper verifier: the full v0.1 pipeline is more than a second opinion needs.
 - Calibrate on data that matches deployment (real photos), add image-quality features (blur, perspective) and a
   "layout looks new" detector that forces review.
 - Conformal risk control instead of a single frozen threshold, with a separate calibration split.
@@ -183,12 +223,14 @@ uv run menubench synth --out data/synth -n 300 --seed 42      # same seed, same 
 cp .env.example .env                                             # set OPENROUTER_API_KEY
 uv run menubench run configs/e2e-claude-haiku55.yaml --split test --dry-run
 uv run menubench run configs/e2e-claude-haiku55.yaml --split test
-uv run menubench calibrate runs/<dev run of full-gemini25-flash-lite>
+uv run menubench run configs/second-opinion-claude.yaml                  # dev run for calibration
+uv run menubench calibrate runs/<that run> --out configs/calibration/second-opinion-claude.json
+uv run menubench run configs/second-opinion-claude-cal.yaml --split test
 uv run menubench report
 ```
 
-All experiments behind this README (OCR comparison, baselines, the reference pipeline on dev and test, ablations,
-linking) cost about **$9** in model calls.
+All experiments behind this README (OCR comparison, baselines, both pipelines on dev and test, ablations, linking)
+cost about **$10** in model calls.
 
 ## Web app
 

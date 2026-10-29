@@ -78,12 +78,15 @@ def choose_thresholds(probs: Iterable[float], labels: Iterable[bool], risks: tup
 
 
 def fit(
-    samples: list[tuple[PricePrediction, bool]], fitted_on: str, risks: tuple[float, ...] = (0.01, 0.02, 0.05)
+    samples: list[tuple[PricePrediction, bool]],
+    fitted_on: str,
+    risks: tuple[float, ...] = (0.01, 0.02, 0.05),
+    only: list[str] | None = None,
 ) -> Calibrator:
     from sklearn.isotonic import IsotonicRegression
     from sklearn.linear_model import LogisticRegression
 
-    features = sorted({k for p, _ in samples for k in p.signals})
+    features = sorted({k for p, _ in samples for k in p.signals if only is None or k in only})
     if not features:
         raise ValueError("predictions carry no signals; calibrate a pipeline that records them")
     x = np.array([[p.signals.get(f, 0.0) for f in features] for p, _ in samples], dtype=float)

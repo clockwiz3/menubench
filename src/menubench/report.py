@@ -12,7 +12,7 @@ REPORTS_DIR = Path("reports")
 Runs = dict[str, tuple[RunDir, dict[str, Any]]]
 
 # Configs shown in the headline chart, in a fixed order so each keeps its color across reports.
-CHART_CONFIGS = ("e2e-claude-haiku55", "e2e-gemini25-flash-lite", "full-gemini25-flash-lite-cal")
+CHART_CONFIGS = ("second-opinion-claude-cal", "e2e-claude-haiku55", "full-gemini25-flash-lite-cal")
 
 
 def latest_runs(root: Path = RUNS_DIR, prefix: str = "", split: str = "test") -> Runs:
@@ -34,6 +34,15 @@ def _pct(v: float | None) -> str:
 
 def _num(v: float | None, digits: int = 2) -> str:
     return "–" if v is None else f"{v:.{digits}f}"
+
+
+MIN_RATE_BASE = 20  # a rate over fewer events is noise; show the count instead
+
+
+def _rate(value: float | None, base: int | None) -> str:
+    if base is not None and base < MIN_RATE_BASE:
+        return f"– (n={base})"
+    return _pct(value)
 
 
 def _table(headers: list[str], rows: list[list[str]]) -> str:
@@ -92,7 +101,7 @@ def extraction_table(runs: Runs) -> str:
                     _num(sel["aurc"], 3),
                     _num((m.get("calibration") or {}).get("ece"), 3),
                     _pct(op.get("recall")),
-                    _pct(op.get("risk")),
+                    _rate(op.get("risk"), op.get("auto_placed")) if op else "–",
                     f"{m['cost']['per_menu_usd']:.4f}",
                     _num(m["latency_s"]["p50"], 1),
                     str(m["menus"]) + (f" ({m['failed_menus']} failed)" if m.get("failed_menus") else ""),
@@ -125,7 +134,7 @@ def linking_table(runs: Runs) -> str:
             [
                 f"`{name}`",
                 str(lk["links"]),
-                _pct(lk["wrong_link_rate"]),
+                _rate(lk["wrong_link_rate"], lk["links"]),
                 _pct(lk["auto_link_recall"]),
                 _pct(lk["hint_top3"]),
                 _pct(lk["abstain_precision"]),
@@ -167,7 +176,7 @@ def ablation_table(runs: Runs) -> str:
                 _num(m["selective"]["aurc"], 3),
                 _num((m.get("calibration") or {}).get("ece"), 3),
                 _pct(op.get("recall")),
-                _pct(op.get("risk")),
+                _rate(op.get("risk"), op.get("auto_placed")) if op else "–",
                 f"{m['cost']['per_menu_usd']:.4f}",
             ]
         )
@@ -204,34 +213,100 @@ def risk_coverage_chart(runs: Runs, path: Path) -> Path | None:
     if not series:
         return None
     colors = ("#2a78d6", "#eb6834", "#1baf7a")  # categorical slots 1-3, validated for CVD separation
-    fig, ax = plt.subplots(figsize=(7.2, 4.0), dpi=150)
+    fig, axes = plt.subplots(1, 2, figsize=(10.0, 4.0), dpi=150, gridspec_kw={"width_ratios": [1, 1]})
     fig.patch.set_facecolor("#fcfcfb")
-    ax.set_facecolor("#fcfcfb")
-    for (name, curve), color in zip(series, colors, strict=False):
-        xs = [p["coverage"] for p in curve]
-        ys = [p["risk"] for p in curve]
-        ax.step(xs, ys, where="post", color=color, linewidth=2, label=name)
-    ax.axhline(0.01, color="#c3c2b7", linewidth=1, linestyle="--")
-    ax.text(0.005, 0.012, "1% risk", color="#52514e", fontsize=8)
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, max(0.05, max(max(p["risk"] for p in c) for _, c in series if c) * 1.1))
-    ax.set_xlabel("coverage — share of predictions kept, most confident first", color="#52514e", fontsize=9)
-    ax.set_ylabel("risk — errors among kept", color="#52514e", fontsize=9)
-    ax.xaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
-    ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
-    ax.grid(color="#e1e0d9", linewidth=0.8)
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    ax.tick_params(colors="#52514e", labelsize=8, length=0)
-    ax.legend(frameon=False, fontsize=8, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=len(series))
-    fig.tight_layout()
+    top = max(0.05, max(max(p["risk"] for p in c) for _, c in series if c) * 1.1)
+    for ax, ylim, title in ((axes[0], top, "all configurations"), (axes[1], 0.04, "zoom: 0–4% risk")):
+        ax.set_facecolor("#fcfcfb")
+        for (name, curve), color in zip(series, colors, strict=False):
+            xs = [p["coverage"] for p in curve]
+            ys = [p["risk"] for p in curve]
+            ax.step(xs, ys, where="post", color=color, linewidth=2, label=name)
+        ax.axhline(0.01, color="#c3c2b7", linewidth=1, linestyle="--")
+        ax.text(0.005, 0.01 + ylim * 0.015, "1% risk", color="#52514e", fontsize=8)
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, ylim)
+        ax.set_title(title, color="#52514e", fontsize=9, loc="left")
+        ax.set_xlabel("coverage — share of predictions kept, most confident first", color="#52514e", fontsize=8)
+        ax.xaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
+        ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
+        ax.grid(color="#e1e0d9", linewidth=0.8)
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+        ax.tick_params(colors="#52514e", labelsize=8, length=0)
+    axes[0].set_ylabel("risk — errors among kept", color="#52514e", fontsize=9)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, frameon=False, fontsize=8, loc="upper center", ncol=len(series))
+    fig.tight_layout(rect=(0, 0, 1, 0.93))
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path)
     plt.close(fig)
     return path
 
 
+def headline_table(runs: Runs) -> str:
+    """One row per approach, the numbers that decide whether prices can go on screens unattended."""
+    picks = [
+        ("second-opinion-claude-cal", "Claude reads, pipeline checks, calibrated (v0.2)"),
+        ("e2e-claude-haiku55", "Claude Haiku 5.5, one call"),
+        ("full-gemini25-flash-lite-cal", "reference pipeline, calibrated (v0.1)"),
+        ("full-gemini25-flash-lite-linkdirect", "reference pipeline + LLM picks the catalog item"),
+    ]
+    rows = []
+    for name, label in picks:
+        if name not in runs:
+            continue
+        m = runs[name][1]
+        op = m.get("operating_point") or {}
+        lk = m.get("linking") or {}
+        rows.append(
+            [
+                label,
+                _pct(m["pair"]["f1"]),
+                _pct(op.get("recall")) if op else "–",
+                _rate(op.get("risk"), op.get("auto_placed")) if op else "–",
+                _rate(lk.get("wrong_link_rate"), lk.get("links")) if lk else "–",
+                f"{m['cost']['per_menu_usd']:.4f}",
+            ]
+        )
+    headers = ["approach", "pair F1 %", "auto-placed %", "wrong among auto-placed %", "wrong catalog links %", "$/menu"]
+    return _table(headers, rows)
+
+
+def second_opinion_table(runs: Runs) -> str:
+    picks = [
+        ("second-opinion-claude-cal", "reader confidence + verifier agreement"),
+        ("ablation-reader-confidence-only", "reader confidence only"),
+    ]
+    rows = []
+    for name, label in picks:
+        if name not in runs:
+            continue
+        m = runs[name][1]
+        op = m.get("operating_point") or {}
+        sel = m["selective"]
+        rows.append(
+            [
+                label,
+                _num(sel["aurc"], 4),
+                _pct(sel["safe_recall"].get("0.01")),
+                _pct(op.get("recall")),
+                _rate(op.get("risk"), op.get("auto_placed")),
+            ]
+        )
+    headers = [
+        "calibrated on",
+        "AURC ↓",
+        "best possible auto-placed at ≤1% (hindsight) %",
+        "auto-placed at the dev threshold %",
+        "wrong among them %",
+    ]
+    return _table(headers, rows)
+
+
 SECTIONS: dict[str, tuple[str, Callable[[Runs], str]]] = {
+    "headline": ("", headline_table),
+    "second_opinion": ("", second_opinion_table),
     "ocr": ("ocr-", ocr_table),
     "extraction": ("", extraction_table),
     "linking": ("", linking_table),
