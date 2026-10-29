@@ -106,7 +106,9 @@ class RealStore:
         (folder / "meta.json").write_text(meta.model_dump_json(indent=1), encoding="utf-8")
         return menu_id
 
-    def save(self, annotation: MenuAnnotation, status: Status | None = None, split: str | None = None, **meta_updates: object) -> MenuMeta:
+    def save(
+        self, annotation: MenuAnnotation, status: Status | None = None, split: str | None = None, **meta_updates: object
+    ) -> MenuMeta:
         folder = self._dir(annotation.menu_id)
         current = self.annotation(annotation.menu_id)
         if annotation.pages != current.pages:
