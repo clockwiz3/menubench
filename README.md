@@ -193,6 +193,10 @@ confidence → auto-place or review → strict linking for trusted prices only.
   for prices the pipeline trusts.
 - **Held-out layouts stayed held out.** The price-left failure was visible in the annotator before the final run;
   it was not fixed, so the test numbers stay honest.
+- **Pixel-exact boxes where people look.** Model boxes drift by a glyph; the demo and the annotator's pre-labelling
+  snap each price box to its ink (line segmentation, color of the price's own ink, word count of the printed price),
+  falling back to the model's box when the result looks implausible. Benchmark scores keep raw boxes: the synthetic
+  ground truth is the typographic line box, so snapping to ink would lower IoU without changing any decision.
 - **Reproducibility without publishing model outputs.** Every response is cached locally by
   (model, prompt version, parameters, image hash); `--mode replay` re-scores everything offline. The cache is not
   published; `--dry-run` estimates what a fresh run costs.

@@ -56,9 +56,11 @@ class SecondOpinion(Pipeline):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         ids = {role: spec.id for role, spec in self.models.items()}
-        self.reader = VlmEndToEnd(self.client, {"vlm": ids["vlm"]})
+        self.reader = VlmEndToEnd(
+            self.client, {"vlm": ids["vlm"]}, {"refine_boxes": self.params.get("refine_boxes", False)}
+        )
         # The verifier runs uncalibrated: its own confidence is one of the signals, not the decision.
-        verifier_params = {k: v for k, v in self.params.items() if k in ("passes", "tiebreak")}
+        verifier_params = {k: v for k, v in self.params.items() if k in ("passes", "tiebreak", "refine_boxes")}
         self.verifier = FullPipeline(
             self.client, {"ocr": ids["ocr"], "attribution": ids["attribution"]}, verifier_params
         )

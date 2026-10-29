@@ -19,6 +19,7 @@ from PIL import Image, ImageDraw
 
 from menubench.calibration import Calibrator
 from menubench.detect import Candidate, find_candidates, median_height
+from menubench.detect.refine import refine_prices
 from menubench.eval.text import cer, normalize
 from menubench.link import LinkerConfig, arbitrate, decide, link_direct
 from menubench.llm import ImagePart, LLMError, parse_json, prompt
@@ -275,6 +276,7 @@ class FullPipeline(Pipeline):
             kind=kind,
             bbox=cand.bbox,
             name=winner.item,
+            text=cand.text,
             confidence=confidence,
             signals=signals,
             auto=auto,
@@ -315,6 +317,8 @@ class FullPipeline(Pipeline):
                 if prediction is not None:
                     prices.append(prediction)
             await log.stage("attribution", page=page_no, decisions=decisions)
+        if self.params.get("refine_boxes", False):
+            prices = list(refine_prices(menu.pages, tuple(prices)))
         links = await self._link(menu, prices, log, spend) if self.params.get("link") and menu.catalog else ()
         return MenuPrediction(
             menu_id=menu.menu_id,

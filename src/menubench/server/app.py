@@ -23,8 +23,8 @@ class Settings:
     runs_root: Path = RUNS_DIR
     web_dist: Path = WEB_DIST
     data_root: Path = Path("data")
-    prelabel_config: Path = Path("configs/second-opinion-claude-cal.yaml")
-    try_config: Path = Path("configs/second-opinion-claude-cal.yaml")
+    prelabel_config: Path = Path("configs/demo.yaml")
+    try_config: Path = Path("configs/demo.yaml")
     try_daily_budget_usd: float = 1.0
     try_uploads_per_ip: int = 10
     trust_proxy: bool = False  # use X-Forwarded-For for rate limits (only behind a trusted proxy)
@@ -38,7 +38,7 @@ class Settings:
             runs_root=Path(env.get("MENUBENCH_RUNS", str(RUNS_DIR))),
             data_root=Path(env.get("MENUBENCH_DATA", "data")),
             web_dist=Path(env.get("MENUBENCH_WEB_DIST", str(WEB_DIST))),
-            try_config=Path(env.get("MENUBENCH_TRY_CONFIG", "configs/second-opinion-claude-cal.yaml")),
+            try_config=Path(env.get("MENUBENCH_TRY_CONFIG", "configs/demo.yaml")),
             try_daily_budget_usd=float(env.get("MENUBENCH_TRY_BUDGET_USD", "1.0")),
             try_uploads_per_ip=int(env.get("MENUBENCH_TRY_UPLOADS_PER_IP", "10")),
             trust_proxy=env.get("MENUBENCH_TRUST_PROXY", "") == "1",

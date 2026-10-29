@@ -12,6 +12,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from menubench.detect import Candidate, find_candidates, h_overlap, is_size_label, median_height, v_overlap
+from menubench.detect.refine import refine_prices
 from menubench.llm import ImagePart, parse_json, prompt
 from menubench.llm.boxes import box_prompt, raw_box, to_bbox
 from menubench.ocr import vlm_ocr
@@ -99,6 +100,7 @@ class VlmEndToEnd(Pipeline):
                         kind=kind,
                         bbox=box,
                         name=str(entry.get("item") or "") or None,
+                        text=str(entry.get("price_text") or "") or None,
                         confidence=_confidence(entry.get("confidence")),
                     )
                 )
@@ -110,6 +112,8 @@ class VlmEndToEnd(Pipeline):
                 prices=[p.model_dump(mode="json") for p in page_prices],
                 cost_usd=response.cost_usd,
             )
+        if self.params.get("refine_boxes", False):
+            prices = list(refine_prices(menu.pages, tuple(prices)))
         return MenuPrediction(
             menu_id=menu.menu_id,
             config=self.name,
