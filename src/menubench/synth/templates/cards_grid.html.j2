@@ -1,0 +1,35 @@
+{% extends "_base.html.j2" %}
+{% block style %}
+  .grid { display: grid; grid-template-columns: repeat({{ theme.columns }}, 1fr); gap: calc(var(--size) * 1.1); }
+  .card { border: 1px solid var(--muted); border-radius: 12px; padding: calc(var(--size) * 0.7);
+          display: flex; flex-direction: column; gap: 6px; }
+  .photo { height: calc(var(--size) * 6); border-radius: 8px;
+           background: linear-gradient(135deg, var(--accent), var(--muted)); opacity: 0.55; }
+  .name { font-weight: 600; }
+  .prices { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; margin-top: auto; }
+  .prices .price { color: var(--accent); font-size: calc(var(--size) * 1.15); }
+  .pair { display: inline-flex; gap: 5px; align-items: baseline; }
+{% endblock %}
+{% block body %}
+{% for s in menu.sections %}
+<h2><span data-mb-kind="section">{{ s.title }}</span></h2>
+<div class="grid">
+  {% for it in s.items %}
+  <div class="card">
+    {% if theme.photos %}<div class="photo"></div>{% endif %}
+    <div class="name"><span data-mb-kind="item" data-mb-id="{{ it.id }}">{{ it.name }}</span></div>
+    {% if it.description %}<div class="desc"><span data-mb-kind="description">{{ it.description }}</span></div>{% endif %}
+    {% if it.weight %}<div class="desc"><span data-mb-kind="other">{{ it.weight }}</span></div>{% endif %}
+    <div class="prices">
+      {% for p in it.prices %}
+      <span class="pair">
+        {% if p.size_label %}<span class="size" data-mb-kind="size">{{ p.size_label }}</span>{% endif %}
+        <span class="price" data-mb-kind="price" data-mb-id="{{ p.id }}">{{ p.text }}</span>
+      </span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+{% endblock %}

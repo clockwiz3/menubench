@@ -1,0 +1,38 @@
+{% extends "_base.html.j2" %}
+{% block style %}
+  table { width: 100%; border-collapse: collapse; margin-bottom: calc(var(--size) * 0.8); }
+  th { text-align: left; padding: 6px 8px; border-bottom: 2px solid var(--accent); vertical-align: bottom; }
+  th.num, td.num { text-align: right; width: calc(var(--size) * 5.5); }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--muted); vertical-align: top; }
+  {% if theme.zebra %}tbody tr:nth-child(even) td { background: rgba(127, 127, 127, 0.08); }{% endif %}
+  th h2 { margin: 0; }
+  .desc { margin-top: 2px; }
+{% endblock %}
+{% block body %}
+{% for s in menu.sections %}
+<table>
+  <thead>
+    <tr>
+      <th><h2><span data-mb-kind="section">{{ s.title }}</span></h2></th>
+      {% if s.sizes %}
+        {% for label in s.sizes %}<th class="num"><span class="size" data-mb-kind="size">{{ label }}</span></th>{% endfor %}
+      {% else %}
+        <th class="num"></th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for it in s.items %}
+    <tr>
+      <td>
+        <span data-mb-kind="item" data-mb-id="{{ it.id }}">{{ it.name }}</span>
+        {% if it.weight %}<span class="size"> · <span data-mb-kind="other">{{ it.weight }}</span></span>{% endif %}
+        {% if it.description %}<div class="desc"><span data-mb-kind="description">{{ it.description }}</span></div>{% endif %}
+      </td>
+      {% for p in it.prices %}<td class="num"><span class="price" data-mb-kind="price" data-mb-id="{{ p.id }}">{{ p.text }}</span></td>{% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endfor %}
+{% endblock %}

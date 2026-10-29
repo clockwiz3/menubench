@@ -67,6 +67,25 @@ class Page(_Model):
     image: str  # path relative to the dataset root
 
 
+class TextRole(StrEnum):
+    TITLE = "title"
+    SECTION = "section"
+    ITEM = "item"
+    DESCRIPTION = "description"
+    PRICE = "price"
+    SIZE = "size"  # size label such as "S" or "0.3 l", not a price
+    OTHER = "other"  # address, phone, notes: distractors for the price detector
+
+
+class TextLine(_Model):
+    """One visual line of text. Synthetic menus know every line exactly; used to score OCR."""
+
+    page: int = Field(ge=0)
+    text: str
+    bbox: BBox
+    role: TextRole = TextRole.OTHER
+
+
 class CatalogEntry(_Model):
     id: str
     name: str
@@ -112,6 +131,7 @@ class MenuAnnotation(_Model):
     items: tuple[MenuItem, ...] = ()
     prices: tuple[PriceAnnotation, ...] = ()
     catalog: tuple[CatalogEntry, ...] = ()
+    lines: tuple[TextLine, ...] = ()
     template: str | None = None
     augment: AugmentLevel | None = None
     seed: int | None = None

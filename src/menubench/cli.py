@@ -32,7 +32,11 @@ def synth(
     seed: Annotated[int, typer.Option(help="Generator seed.")] = 42,
 ) -> None:
     """Generate synthetic menus with exact ground truth."""
-    _not_ready("M1")
+    from menubench.synth.generate import SynthConfig, generate_dataset
+
+    with typer.progressbar(length=n, label="Rendering") as bar:
+        count = generate_dataset(out, SynthConfig(n=n, seed=seed), on_menu=lambda _: bar.update(1))
+    typer.echo(f"{count} menus written to {out}")
 
 
 @app.command()

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="{{ menu.lang }}">
+<head>
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg: {{ theme.bg }}; --fg: {{ theme.fg }}; --accent: {{ theme.accent }}; --muted: {{ theme.muted }};
+    --font: {{ theme.font }}; --title-font: {{ theme.title_font }}; --size: {{ theme.size }}px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { font-family: var(--font); font-size: var(--size); line-height: 1.35; width: {{ theme.width }}px; }
+  .page { padding: {{ theme.padding }}px; }
+  h1 { font-family: var(--title-font); color: var(--accent); font-size: calc(var(--size) * 2.4);
+       text-align: {{ theme.title_align }}; margin-bottom: calc(var(--size) * 1.2); font-weight: 700; }
+  h2 { font-family: var(--title-font); color: var(--accent); font-size: calc(var(--size) * 1.45);
+       margin: calc(var(--size) * 0.9) 0 calc(var(--size) * 0.5); font-weight: 700; }
+  .desc { color: var(--muted); font-size: calc(var(--size) * 0.82); }
+  .price { font-weight: {{ theme.price_weight }}; white-space: nowrap; }
+  .size { color: var(--muted); font-size: calc(var(--size) * 0.8); white-space: nowrap; }
+  .notes { margin-top: calc(var(--size) * 1.5); color: var(--muted); font-size: calc(var(--size) * 0.8);
+           text-align: center; }
+  .notes div { margin-top: 4px; }
+  {% block style %}{% endblock %}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1><span data-mb-kind="title">{{ menu.title }}</span></h1>
+  {% block body %}{% endblock %}
+  {% if menu.notes %}
+  <div class="notes">
+    {% for note in menu.notes %}<div><span data-mb-kind="other">{{ note }}</span></div>{% endfor %}
+  </div>
+  {% endif %}
+</div>
+</body>
+</html>

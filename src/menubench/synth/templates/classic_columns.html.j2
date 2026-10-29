@@ -1,0 +1,36 @@
+{% extends "_base.html.j2" %}
+{% block style %}
+  .columns { column-count: {{ theme.columns }}; column-gap: calc(var(--size) * 2.5); }
+  section { break-inside: avoid; margin-bottom: calc(var(--size) * 0.6); }
+  .row { display: flex; align-items: baseline; gap: 8px; margin-top: calc(var(--size) * 0.45); }
+  .name { flex: 0 1 auto; }
+  .leader { flex: 1 1 auto; min-width: 20px; border-bottom: 2px dotted var(--muted);
+            {% if not theme.leaders %}border-color: transparent;{% endif %} transform: translateY(-4px); }
+  .cell { flex: 0 0 auto; min-width: calc(var(--size) * 3.6); text-align: right; }
+  .weight { color: var(--muted); font-size: calc(var(--size) * 0.8); white-space: nowrap; }
+  .desc { margin-top: 2px; padding-right: calc(var(--size) * 4); }
+{% endblock %}
+{% block body %}
+<div class="columns">
+  {% for s in menu.sections %}
+  <section>
+    <h2><span data-mb-kind="section">{{ s.title }}</span></h2>
+    {% if s.sizes %}
+    <div class="row">
+      <span class="name"></span><span class="leader" style="border-color: transparent"></span>
+      {% for label in s.sizes %}<span class="cell"><span class="size" data-mb-kind="size">{{ label }}</span></span>{% endfor %}
+    </div>
+    {% endif %}
+    {% for it in s.items %}
+    <div class="row">
+      <span class="name"><span data-mb-kind="item" data-mb-id="{{ it.id }}">{{ it.name }}</span></span>
+      {% if it.weight %}<span class="weight"><span data-mb-kind="other">{{ it.weight }}</span></span>{% endif %}
+      <span class="leader"></span>
+      {% for p in it.prices %}<span class="cell"><span class="price" data-mb-kind="price" data-mb-id="{{ p.id }}">{{ p.text }}</span></span>{% endfor %}
+    </div>
+    {% if it.description %}<div class="desc"><span data-mb-kind="description">{{ it.description }}</span></div>{% endif %}
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}
