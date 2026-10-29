@@ -145,6 +145,125 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/try/limits': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Limits */
+    get: operations['get_limits_api_try_limits_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/try/jobs': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Start */
+    post: operations['start_api_try_jobs_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/try/jobs/{job_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Job */
+    get: operations['get_job_api_try_jobs__job_id__get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/try/jobs/{job_id}/events': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Events */
+    get: operations['events_api_try_jobs__job_id__events_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/try/jobs/{job_id}/pages/{page}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Job Page */
+    get: operations['job_page_api_try_jobs__job_id__pages__page__get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/try/gallery': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Gallery */
+    get: operations['gallery_api_try_gallery_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/try/gallery/{name}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Gallery Image */
+    get: operations['gallery_image_api_try_gallery__name__get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/health': {
     parameters: {
       query?: never
@@ -182,6 +301,11 @@ export interface components {
       /** Y1 */
       y1: number
     }
+    /** Body_start_api_try_jobs_post */
+    Body_start_api_try_jobs_post: {
+      /** File */
+      file: string
+    }
     /** Body_upload_api_annotate_menus_post */
     Body_upload_api_annotate_menus_post: {
       /** Files */
@@ -193,6 +317,16 @@ export interface components {
       id: string
       /** Name */
       name: string
+    }
+    /** GalleryItem */
+    GalleryItem: {
+      /** Id */
+      id: string
+      /** Title */
+      title: string
+      /** Note */
+      note: string
+      job: components['schemas']['TryJob']
     }
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -629,6 +763,45 @@ export interface components {
      * @enum {string}
      */
     TextRole: 'title' | 'section' | 'item' | 'description' | 'price' | 'size' | 'other'
+    /** TryJob */
+    TryJob: {
+      /** Job Id */
+      job_id: string
+      /** Status */
+      status: string
+      /** Pages */
+      pages: components['schemas']['TryPage'][]
+      prediction?: components['schemas']['MenuPrediction'] | null
+      /** Error */
+      error?: string | null
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string
+    }
+    /** TryLimits */
+    TryLimits: {
+      /** Enabled */
+      enabled: boolean
+      /** Reason */
+      reason: string | null
+      /** Uploads Left Today */
+      uploads_left_today: number
+      /** Budget Left Usd */
+      budget_left_usd: number
+    }
+    /** TryPage */
+    TryPage: {
+      /** Index */
+      index: number
+      /** Width */
+      width: number
+      /** Height */
+      height: number
+      /** Url */
+      url: string
+    }
     /** ValidationError */
     ValidationError: {
       /** Location */
@@ -947,6 +1120,200 @@ export interface operations {
       }
     }
   }
+  get_limits_api_try_limits_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['TryLimits']
+        }
+      }
+    }
+  }
+  start_api_try_jobs_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'multipart/form-data': components['schemas']['Body_start_api_try_jobs_post']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['TryJob']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_job_api_try_jobs__job_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        job_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['TryJob']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  events_api_try_jobs__job_id__events_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        job_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': unknown
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  job_page_api_try_jobs__job_id__pages__page__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        job_id: string
+        page: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  gallery_api_try_gallery_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['GalleryItem'][]
+        }
+      }
+    }
+  }
+  gallery_image_api_try_gallery__name__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        name: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
   health_api_health_get: {
     parameters: {
       query?: never
@@ -963,7 +1330,7 @@ export interface operations {
         }
         content: {
           'application/json': {
-            [key: string]: string
+            [key: string]: unknown
           }
         }
       }

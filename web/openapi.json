@@ -431,6 +431,254 @@
     }
    }
   },
+  "/api/try/limits": {
+   "get": {
+    "tags": [
+     "try"
+    ],
+    "summary": "Get Limits",
+    "operationId": "get_limits_api_try_limits_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TryLimits"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/try/jobs": {
+   "post": {
+    "tags": [
+     "try"
+    ],
+    "summary": "Start",
+    "operationId": "start_api_try_jobs_post",
+    "requestBody": {
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_start_api_try_jobs_post"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TryJob"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/try/jobs/{job_id}": {
+   "get": {
+    "tags": [
+     "try"
+    ],
+    "summary": "Get Job",
+    "operationId": "get_job_api_try_jobs__job_id__get",
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Job Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TryJob"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/try/jobs/{job_id}/events": {
+   "get": {
+    "tags": [
+     "try"
+    ],
+    "summary": "Events",
+    "operationId": "events_api_try_jobs__job_id__events_get",
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Job Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/try/jobs/{job_id}/pages/{page}": {
+   "get": {
+    "tags": [
+     "try"
+    ],
+    "summary": "Job Page",
+    "operationId": "job_page_api_try_jobs__job_id__pages__page__get",
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Job Id"
+      }
+     },
+     {
+      "name": "page",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Page"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/try/gallery": {
+   "get": {
+    "tags": [
+     "try"
+    ],
+    "summary": "Gallery",
+    "operationId": "gallery_api_try_gallery_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/GalleryItem"
+         },
+         "type": "array",
+         "title": "Response Gallery Api Try Gallery Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/try/gallery/{name}": {
+   "get": {
+    "tags": [
+     "try"
+    ],
+    "summary": "Gallery Image",
+    "operationId": "gallery_image_api_try_gallery__name__get",
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/health": {
    "get": {
     "tags": [
@@ -444,9 +692,7 @@
       "content": {
        "application/json": {
         "schema": {
-         "additionalProperties": {
-          "type": "string"
-         },
+         "additionalProperties": true,
          "type": "object",
          "title": "Response Health Api Health Get"
         }
@@ -505,6 +751,20 @@
     ],
     "title": "BBox"
    },
+   "Body_start_api_try_jobs_post": {
+    "properties": {
+     "file": {
+      "type": "string",
+      "contentMediaType": "application/octet-stream",
+      "title": "File"
+     }
+    },
+    "type": "object",
+    "required": [
+     "file"
+    ],
+    "title": "Body_start_api_try_jobs_post"
+   },
    "Body_upload_api_annotate_menus_post": {
     "properties": {
      "files": {
@@ -540,6 +800,33 @@
      "name"
     ],
     "title": "CatalogEntry"
+   },
+   "GalleryItem": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "note": {
+      "type": "string",
+      "title": "Note"
+     },
+     "job": {
+      "$ref": "#/components/schemas/TryJob"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "title",
+     "note",
+     "job"
+    ],
+    "title": "GalleryItem"
    },
    "HTTPValidationError": {
     "properties": {
@@ -1834,6 +2121,122 @@
      "other"
     ],
     "title": "TextRole"
+   },
+   "TryJob": {
+    "properties": {
+     "job_id": {
+      "type": "string",
+      "title": "Job Id"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "pages": {
+      "items": {
+       "$ref": "#/components/schemas/TryPage"
+      },
+      "type": "array",
+      "title": "Pages"
+     },
+     "prediction": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/MenuPrediction"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "error": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Error"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "job_id",
+     "status",
+     "pages",
+     "created_at"
+    ],
+    "title": "TryJob"
+   },
+   "TryLimits": {
+    "properties": {
+     "enabled": {
+      "type": "boolean",
+      "title": "Enabled"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     },
+     "uploads_left_today": {
+      "type": "integer",
+      "title": "Uploads Left Today"
+     },
+     "budget_left_usd": {
+      "type": "number",
+      "title": "Budget Left Usd"
+     }
+    },
+    "type": "object",
+    "required": [
+     "enabled",
+     "reason",
+     "uploads_left_today",
+     "budget_left_usd"
+    ],
+    "title": "TryLimits"
+   },
+   "TryPage": {
+    "properties": {
+     "index": {
+      "type": "integer",
+      "title": "Index"
+     },
+     "width": {
+      "type": "integer",
+      "title": "Width"
+     },
+     "height": {
+      "type": "integer",
+      "title": "Height"
+     },
+     "url": {
+      "type": "string",
+      "title": "Url"
+     }
+    },
+    "type": "object",
+    "required": [
+     "index",
+     "width",
+     "height",
+     "url"
+    ],
+    "title": "TryPage"
    },
    "ValidationError": {
     "properties": {

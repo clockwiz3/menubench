@@ -19,12 +19,7 @@ export const router = createRouter({
       component: () => import('./pages/AnnotateEditorPage.vue'),
       props: true,
     },
-    {
-      path: '/try',
-      name: 'try',
-      component: () => import('./pages/PlaceholderPage.vue'),
-      props: { title: 'Try it' },
-    },
+    { path: '/try', name: 'try', component: () => import('./pages/TryPage.vue') },
   ],
   scrollBehavior: () => ({ top: 0 }),
 })

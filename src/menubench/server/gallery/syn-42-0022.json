@@ -1,0 +1,840 @@
+{
+ "id": "syn-42-0022",
+ "title": "price_left · ru · clean",
+ "note": "synthetic test menu; layout held out during development",
+ "job": {
+  "job_id": "syn-42-0022",
+  "status": "done",
+  "pages": [
+   {
+    "index": 0,
+    "width": 1000,
+    "height": 1139,
+    "url": "/api/try/gallery/syn-42-0022.jpg"
+   }
+  ],
+  "prediction": {
+   "menu_id": "syn-42-0022",
+   "config": "full-gemini25-flash-lite-cal",
+   "prices": [
+    {
+     "page": 0,
+     "value": "1099",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.11807692307692308,
+      "y0": 0.181,
+      "x1": 0.20894615384615384,
+      "y1": 0.201
+     },
+     "name": "Пицца",
+     "confidence": 0.9938,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 1.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": true
+    },
+    {
+     "page": 0,
+     "value": "1450",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.1265,
+      "y0": 0.209,
+      "x1": 0.203,
+      "y1": 0.228
+     },
+     "name": "Пицца",
+     "confidence": 0.9108,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "1749",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.1265,
+      "y0": 0.237,
+      "x1": 0.203,
+      "y1": 0.256
+     },
+     "name": "Пицца",
+     "confidence": 0.9108,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "710",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.128,
+      "y0": 0.27,
+      "x1": 0.2061,
+      "y1": 0.29
+     },
+     "name": "Четыре сыра",
+     "confidence": 0.3889,
+     "signals": {
+      "agreement": 0.3333333333333333,
+      "votes": 3.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "919",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.12572093023255815,
+      "y0": 0.296,
+      "x1": 0.18261162790697677,
+      "y1": 0.316
+     },
+     "name": "ДИАБЛО",
+     "confidence": 0.0708,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 0.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "1150",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.1265,
+      "y0": 0.324,
+      "x1": 0.203,
+      "y1": 0.343
+     },
+     "name": "ДИАБЛО",
+     "confidence": 0.8316,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "1099",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.11975000000000001,
+      "y0": 0.357,
+      "x1": 0.21285000000000004,
+      "y1": 0.377
+     },
+     "name": "Пепперони",
+     "confidence": 0.5641,
+     "signals": {
+      "agreement": 0.6666666666666666,
+      "votes": 3.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "1399",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.1265,
+      "y0": 0.385,
+      "x1": 0.203,
+      "y1": 0.404
+     },
+     "name": "Пепперони",
+     "confidence": 0.8316,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "1700",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.1265,
+      "y0": 0.413,
+      "x1": 0.203,
+      "y1": 0.432
+     },
+     "name": "Пепперони",
+     "confidence": 0.5641,
+     "signals": {
+      "agreement": 0.6666666666666666,
+      "votes": 3.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "950",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.128,
+      "y0": 0.446,
+      "x1": 0.2061,
+      "y1": 0.466
+     },
+     "name": "Пепперони",
+     "confidence": 0.8316,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "1250",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.1265,
+      "y0": 0.474,
+      "x1": 0.203,
+      "y1": 0.493
+     },
+     "name": "Мясная",
+     "confidence": 0.3889,
+     "signals": {
+      "agreement": 0.3333333333333333,
+      "votes": 3.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "1500",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.1265,
+      "y0": 0.501,
+      "x1": 0.203,
+      "y1": 0.52
+     },
+     "name": "Мясная",
+     "confidence": 0.6809,
+     "signals": {
+      "agreement": 0.6666666666666666,
+      "votes": 3.0,
+      "model_conf": 0.95,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "1199",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.125,
+      "y0": 0.588,
+      "x1": 0.21176666666666666,
+      "y1": 0.607
+     },
+     "name": "Паста",
+     "confidence": 0.9938,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 1.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": true
+    },
+    {
+     "page": 0,
+     "value": "670",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.137,
+      "y0": 0.623,
+      "x1": 0.20282727272727274,
+      "y1": 0.642
+     },
+     "name": "Паста",
+     "confidence": 0.9108,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "1200",
+     "value_max": "1900",
+     "currency": "RUB",
+     "kind": "range",
+     "bbox": {
+      "x0": 0.046,
+      "y0": 0.658,
+      "x1": 0.2056,
+      "y1": 0.677
+     },
+     "name": "Лазанья",
+     "confidence": 0.8316,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "609",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.137,
+      "y0": 0.745,
+      "x1": 0.20281428571428572,
+      "y1": 0.765
+     },
+     "name": "Салаты",
+     "confidence": 0.9938,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 1.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": true
+    },
+    {
+     "page": 0,
+     "value": "630",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.137,
+      "y0": 0.8,
+      "x1": 0.20025789473684213,
+      "y1": 0.82
+     },
+     "name": "Салат с тунцом",
+     "confidence": 0.8316,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "760",
+     "value_max": null,
+     "currency": "RUB",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.137,
+      "y0": 0.856,
+      "x1": 0.2077153846153846,
+      "y1": 0.876
+     },
+     "name": "О",
+     "confidence": 0.5641,
+     "signals": {
+      "agreement": 0.6666666666666666,
+      "votes": 3.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    }
+   ],
+   "links": [
+    {
+     "action": "abstain",
+     "catalog_id": null,
+     "candidates": [],
+     "reason": "no similar item in the catalog (best match 46%)"
+    },
+    {
+     "action": "abstain",
+     "catalog_id": null,
+     "candidates": [],
+     "reason": "no similar item in the catalog (best match 46%)"
+    },
+    {
+     "action": "abstain",
+     "catalog_id": null,
+     "candidates": [],
+     "reason": "no similar item in the catalog (best match 46%)"
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c016",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c004",
+       "score": 0.4828
+      },
+      {
+       "catalog_id": "c007",
+       "score": 0.4
+      }
+     ],
+     "reason": "arbiter: The catalog item 'Четыре сыра' is an exact match for the menu item."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c001",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c005",
+       "score": 0.4286
+      },
+      {
+       "catalog_id": "c003",
+       "score": 0.4
+      }
+     ],
+     "reason": "arbiter: c001 contains the exact word 'Диабло' and is likely the correct item."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c001",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c005",
+       "score": 0.4286
+      },
+      {
+       "catalog_id": "c003",
+       "score": 0.4
+      }
+     ],
+     "reason": "arbiter: c001 contains the exact word 'Диабло' which is the menu item name."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c012",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c013",
+       "score": 0.2857
+      },
+      {
+       "catalog_id": "c016",
+       "score": 0.2857
+      }
+     ],
+     "reason": "arbiter: c012 is an exact match for the item name."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c012",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c013",
+       "score": 0.2857
+      },
+      {
+       "catalog_id": "c016",
+       "score": 0.2857
+      }
+     ],
+     "reason": "arbiter: The catalog item 'ПЕППЕРОНИ' is a direct match for 'Пепперони'."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c012",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c013",
+       "score": 0.2857
+      },
+      {
+       "catalog_id": "c016",
+       "score": 0.2857
+      }
+     ],
+     "reason": "arbiter: The catalog item 'ПЕППЕРОНИ' is a direct match for 'Пепперони'."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c012",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c013",
+       "score": 0.2857
+      },
+      {
+       "catalog_id": "c016",
+       "score": 0.2857
+      }
+     ],
+     "reason": "arbiter: c012 is an exact match for 'Пепперони'."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c007",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c015",
+       "score": 0.5333
+      },
+      {
+       "catalog_id": "c009",
+       "score": 0.4706
+      }
+     ],
+     "reason": "arbiter: c007 is an exact match for the menu item."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c007",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c015",
+       "score": 0.5333
+      },
+      {
+       "catalog_id": "c009",
+       "score": 0.4706
+      }
+     ],
+     "reason": "arbiter: c007 is an exact match for the menu item."
+    },
+    {
+     "action": "abstain",
+     "catalog_id": null,
+     "candidates": [],
+     "reason": "no similar item in the catalog (best match 46%)"
+    },
+    {
+     "action": "abstain",
+     "catalog_id": null,
+     "candidates": [],
+     "reason": "no similar item in the catalog (best match 46%)"
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c015",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c007",
+       "score": 0.5333
+      },
+      {
+       "catalog_id": "c009",
+       "score": 0.375
+      }
+     ],
+     "reason": "arbiter: c015 is an exact match for the menu item."
+    },
+    {
+     "action": "abstain",
+     "catalog_id": null,
+     "candidates": [],
+     "reason": "no similar item in the catalog (best match 48%)"
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c010",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c011",
+       "score": 0.6364
+      },
+      {
+       "catalog_id": "c008",
+       "score": 0.3415
+      }
+     ],
+     "reason": "arbiter: Candidates c010 and c011 both contain 'тунец' and 'салат' (or a close variation), suggesting they are the same dish."
+    },
+    {
+     "action": "abstain",
+     "catalog_id": null,
+     "candidates": [],
+     "reason": "no similar item in the catalog (best match 29%)"
+    }
+   ],
+   "lines": [],
+   "cost_usd": 0.0038075000000000006,
+   "latency_s": 30.04008280000562,
+   "error": null
+  },
+  "error": null,
+  "created_at": "2026-10-29T14:55:29.791700Z"
+ }
+}

@@ -1,12 +1,27 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { theme, type Theme } from '@/lib/theme'
 
-const nav = [
-  { to: '/', label: 'Runs' },
-  { to: '/annotate', label: 'Annotate' },
-  { to: '/try', label: 'Try it' },
+const allNav = [
+  { to: '/', label: 'Runs', section: 'runs' },
+  { to: '/annotate', label: 'Annotate', section: 'annotate' },
+  { to: '/try', label: 'Try it', section: 'try' },
 ]
+// The server tells which sections it runs; the public demo only has "try".
+const sections = ref<string[] | null>(null)
+const nav = computed(() => allNav.filter((n) => !sections.value || sections.value.includes(n.section)))
+const router = useRouter()
+const route = useRoute()
+onMounted(async () => {
+  try {
+    const health = (await (await fetch('/api/health')).json()) as { sections?: string[] }
+    sections.value = health.sections ?? null
+    if (sections.value && !sections.value.includes('runs') && route.path === '/') await router.replace('/try')
+  } catch {
+    sections.value = null
+  }
+})
 const themes: { value: Theme; label: string }[] = [
   { value: 'system', label: 'Auto' },
   { value: 'light', label: 'Light' },

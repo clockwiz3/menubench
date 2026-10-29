@@ -1,0 +1,781 @@
+{
+ "id": "syn-42-0141",
+ "title": "chalkboard · en · photo",
+ "note": "synthetic test menu",
+ "job": {
+  "job_id": "syn-42-0141",
+  "status": "done",
+  "pages": [
+   {
+    "index": 0,
+    "width": 1077,
+    "height": 859,
+    "url": "/api/try/gallery/syn-42-0141.jpg"
+   }
+  ],
+  "prediction": {
+   "menu_id": "syn-42-0141",
+   "config": "full-gemini25-flash-lite-cal",
+   "prices": [
+    {
+     "page": 0,
+     "value": "10",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.292,
+      "y0": 0.283,
+      "x1": 0.317,
+      "y1": 0.298
+     },
+     "name": "Bacon Burger",
+     "confidence": 0.9938,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 1.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": true
+    },
+    {
+     "page": 0,
+     "value": "9",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.698,
+      "y0": 0.283,
+      "x1": 0.7117,
+      "y1": 0.298
+     },
+     "name": "Onion Rings Loaded",
+     "confidence": 0.8569,
+     "signals": {
+      "agreement": 0.6666666666666666,
+      "votes": 3.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "7",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.7183999999999999,
+      "y0": 0.283,
+      "x1": 0.732,
+      "y1": 0.298
+     },
+     "name": "Onion Rings Loaded",
+     "confidence": 0.9108,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "14",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.658,
+      "y0": 0.33,
+      "x1": 0.781,
+      "y1": 0.347
+     },
+     "name": "Double Smash",
+     "confidence": 0.5558,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 0.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "14",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.283,
+      "y0": 0.336,
+      "x1": 0.327,
+      "y1": 0.352
+     },
+     "name": "Double Smash",
+     "confidence": 0.9108,
+     "signals": {
+      "agreement": 0.5,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 1.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "6",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.707,
+      "y0": 0.354,
+      "x1": 0.725,
+      "y1": 0.369
+     },
+     "name": "Nachos Large",
+     "confidence": 0.9938,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 1.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": true
+    },
+    {
+     "page": 0,
+     "value": "3",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.707,
+      "y0": 0.403,
+      "x1": 0.724,
+      "y1": 0.418
+     },
+     "name": "Mozzarella Sticks",
+     "confidence": 0.8316,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "10",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.293,
+      "y0": 0.409,
+      "x1": 0.317,
+      "y1": 0.424
+     },
+     "name": "Cheeseburger BBQ",
+     "confidence": 0.9108,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "6",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.636,
+      "y0": 0.452,
+      "x1": 0.797,
+      "y1": 0.471
+     },
+     "name": "French Fries Spicy",
+     "confidence": 0.7267,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 1.0,
+      "merged_line": 0.0,
+      "column_support": 0.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "8",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.297,
+      "y0": 0.479,
+      "x1": 0.315,
+      "y1": 0.494
+     },
+     "name": "Veggie Burger",
+     "confidence": 0.9108,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "4",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.707,
+      "y0": 0.545,
+      "x1": 0.724,
+      "y1": 0.56
+     },
+     "name": "Sweet Potato Fries Loaded",
+     "confidence": 0.9108,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "12",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.297,
+      "y0": 0.552,
+      "x1": 0.321,
+      "y1": 0.567
+     },
+     "name": "Classic Burger",
+     "confidence": 0.9108,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "7",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "size_variant",
+     "bbox": {
+      "x0": 0.707,
+      "y0": 0.679,
+      "x1": 0.724,
+      "y1": 0.694
+     },
+     "name": "Apple Pie",
+     "confidence": 0.8316,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 0.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 0.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "9",
+     "value_max": "14",
+     "currency": "USD",
+     "kind": "range",
+     "bbox": {
+      "x0": 0.698,
+      "y0": 0.748,
+      "x1": 0.734,
+      "y1": 0.765
+     },
+     "name": "Cheesecake",
+     "confidence": 0.9108,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    },
+    {
+     "page": 0,
+     "value": "8",
+     "value_max": null,
+     "currency": "USD",
+     "kind": "single",
+     "bbox": {
+      "x0": 0.708,
+      "y0": 0.818,
+      "x1": 0.725,
+      "y1": 0.833
+     },
+     "name": "Key Lime Pie Salted Caramel",
+     "confidence": 0.9108,
+     "signals": {
+      "agreement": 1.0,
+      "votes": 2.0,
+      "model_conf": 0.9,
+      "geometry_agrees": 0.0,
+      "geometry_rule_row": 0.0,
+      "merged_line": 0.0,
+      "column_support": 1.0,
+      "has_currency": 1.0,
+      "name_in_ocr": 1.0,
+      "geometry_fallback": 0.0,
+      "name_same_row": 0.0,
+      "name_above": 1.0,
+      "name_below": 0.0
+     },
+     "auto": false
+    }
+   ],
+   "links": [
+    {
+     "action": "link",
+     "catalog_id": "c002",
+     "candidates": [
+      {
+       "catalog_id": "c002",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c013",
+       "score": 0.5714
+      },
+      {
+       "catalog_id": "c010",
+       "score": 0.5
+      }
+     ],
+     "reason": null
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c015",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c005",
+       "score": 0.5116
+      },
+      {
+       "catalog_id": "c003",
+       "score": 0.4667
+      }
+     ],
+     "reason": "arbiter: c015 is the most likely match due to strong phonetic and spelling similarities."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c015",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c005",
+       "score": 0.5116
+      },
+      {
+       "catalog_id": "c003",
+       "score": 0.4667
+      }
+     ],
+     "reason": "arbiter: c015 is the most likely match due to strong phonetic and semantic similarity."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c004",
+       "score": 0.9167
+      },
+      {
+       "catalog_id": "c012",
+       "score": 0.3448
+      },
+      {
+       "catalog_id": "c003",
+       "score": 0.4167
+      }
+     ],
+     "reason": "arbiter: The closest match is 'Double mSash' due to a likely typo."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c004",
+       "score": 0.9167
+      },
+      {
+       "catalog_id": "c012",
+       "score": 0.3448
+      },
+      {
+       "catalog_id": "c003",
+       "score": 0.4167
+      }
+     ],
+     "reason": "arbiter: The closest match is 'Double mSash' due to a likely typo."
+    },
+    {
+     "action": "link",
+     "catalog_id": "c003",
+     "candidates": [
+      {
+       "catalog_id": "c003",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c007",
+       "score": 0.48
+      },
+      {
+       "catalog_id": "c015",
+       "score": 0.4615
+      }
+     ],
+     "reason": null
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c012",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c003",
+       "score": 0.4138
+      },
+      {
+       "catalog_id": "c011",
+       "score": 0.3636
+      }
+     ],
+     "reason": "arbiter: c012 is a likely match due to similar wording and product type."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c013",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c008",
+       "score": 0.5714
+      },
+      {
+       "catalog_id": "c009",
+       "score": 0.5385
+      }
+     ],
+     "reason": "arbiter: c013 is the most likely match due to the exact name and portion size."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c001",
+       "score": 0.8372
+      },
+      {
+       "catalog_id": "c014",
+       "score": 0.55
+      },
+      {
+       "catalog_id": "c003",
+       "score": 0.4
+      }
+     ],
+     "reason": "arbiter: c001 is the most likely match due to the identical name and inclusion of 'Spicy'."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c010",
+       "score": 0.9231
+      },
+      {
+       "catalog_id": "c002",
+       "score": 0.5
+      },
+      {
+       "catalog_id": "c013",
+       "score": 0.4138
+      }
+     ],
+     "reason": "arbiter: The catalog item 'VGEGIE BURGER' is a likely misspelling of 'Veggie Burger'."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c005",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c015",
+       "score": 0.4103
+      },
+      {
+       "catalog_id": "c011",
+       "score": 0.3846
+      }
+     ],
+     "reason": "arbiter: c005 is the most likely match due to the identical name and product code."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c002",
+       "score": 0.5
+      },
+      {
+       "catalog_id": "c008",
+       "score": 0.5
+      },
+      {
+       "catalog_id": "c010",
+       "score": 0.5926
+      }
+     ],
+     "reason": "arbiter: The candidates contain variations of 'burger' and some include common additions like bacon or cheese, making them plausible matches for a 'Classic Burger'."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c006",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c011",
+       "score": 0.3889
+      },
+      {
+       "catalog_id": "c007",
+       "score": 0.3636
+      }
+     ],
+     "reason": "arbiter: The closest match is 'Appe Pie' which is a likely typo for 'Apple Pie'."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c009",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c013",
+       "score": 0.5385
+      },
+      {
+       "catalog_id": "c008",
+       "score": 0.3889
+      }
+     ],
+     "reason": "arbiter: The closest match is 'Cheeseckae' which is a likely typo of 'Cheesecake'."
+    },
+    {
+     "action": "hint",
+     "catalog_id": null,
+     "candidates": [
+      {
+       "catalog_id": "c011",
+       "score": 1.0
+      },
+      {
+       "catalog_id": "c005",
+       "score": 0.3846
+      },
+      {
+       "catalog_id": "c014",
+       "score": 0.3673
+      }
+     ],
+     "reason": "arbiter: Candidate c011 is an exact match for the menu item."
+    }
+   ],
+   "lines": [],
+   "cost_usd": 0.0032314,
+   "latency_s": 33.61849149999762,
+   "error": null
+  },
+  "error": null,
+  "created_at": "2026-10-29T14:55:29.746022Z"
+ }
+}
