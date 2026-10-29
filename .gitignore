@@ -14,8 +14,8 @@ build/
 
 # Local-only artifacts (model response cache is never published)
 .cache/
-data/
-runs/
+/data/
+/runs/
 
 # Editors / OS
 .idea/
