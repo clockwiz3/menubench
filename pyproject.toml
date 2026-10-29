@@ -20,6 +20,7 @@ dependencies = [
     "sse-starlette>=3.6.0",
     "python-multipart>=0.0.32",
     "scikit-learn>=1.9.1",
+    "pypdfium2>=5.14.0",
 ]
 
 [project.scripts]
@@ -53,13 +54,17 @@ plugins = ["pydantic.mypy"]
 files = ["src", "tests"]
 
 [[tool.mypy.overrides]]
-module = ["sklearn.*"]
+module = ["sklearn.*", "pypdfium2.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["render: needs a Playwright Chromium", "live: calls real model APIs (opt-in)"]
-addopts = "-m 'not live'"
+markers = [
+    "render: needs a Playwright Chromium",
+    "live: calls real model APIs (opt-in)",
+    "e2e: browser tests against the built frontend (opt-in)",
+]
+addopts = "-m 'not live and not e2e'"
 filterwarnings = ["ignore::DeprecationWarning:fastapi.testclient", "ignore:Using `httpx` with `starlette.testclient`"]
 
 [tool.uv]

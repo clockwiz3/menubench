@@ -176,6 +176,261 @@
     }
    }
   },
+  "/api/annotate/menus": {
+   "get": {
+    "tags": [
+     "annotate"
+    ],
+    "summary": "List Menus",
+    "operationId": "list_menus_api_annotate_menus_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/MenuListRow"
+         },
+         "title": "Response List Menus Api Annotate Menus Get"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "annotate"
+    ],
+    "summary": "Upload",
+    "operationId": "upload_api_annotate_menus_post",
+    "parameters": [
+     {
+      "name": "lang",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "default": "ru",
+       "title": "Lang"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_upload_api_annotate_menus_post"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MenuForEditor"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/annotate/menus/{menu_id}": {
+   "get": {
+    "tags": [
+     "annotate"
+    ],
+    "summary": "Get Menu",
+    "operationId": "get_menu_api_annotate_menus__menu_id__get",
+    "parameters": [
+     {
+      "name": "menu_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Menu Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MenuForEditor"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "annotate"
+    ],
+    "summary": "Save Menu",
+    "operationId": "save_menu_api_annotate_menus__menu_id__put",
+    "parameters": [
+     {
+      "name": "menu_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Menu Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MenuDraft"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MenuForEditor"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/annotate/menus/{menu_id}/prelabel": {
+   "post": {
+    "tags": [
+     "annotate"
+    ],
+    "summary": "Prelabel",
+    "description": "Runs the reference pipeline and replaces the draft with its proposal. Costs a few tenths of a cent.",
+    "operationId": "prelabel_api_annotate_menus__menu_id__prelabel_post",
+    "parameters": [
+     {
+      "name": "menu_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Menu Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MenuForEditor"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/annotate/menus/{menu_id}/pages/{page}": {
+   "get": {
+    "tags": [
+     "annotate"
+    ],
+    "summary": "Page Image",
+    "operationId": "page_image_api_annotate_menus__menu_id__pages__page__get",
+    "parameters": [
+     {
+      "name": "menu_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Menu Id"
+      }
+     },
+     {
+      "name": "page",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Page"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/health": {
    "get": {
     "tags": [
@@ -249,6 +504,23 @@
      "y1"
     ],
     "title": "BBox"
+   },
+   "Body_upload_api_annotate_menus_post": {
+    "properties": {
+     "files": {
+      "items": {
+       "type": "string",
+       "contentMediaType": "application/octet-stream"
+      },
+      "type": "array",
+      "title": "Files"
+     }
+    },
+    "type": "object",
+    "required": [
+     "files"
+    ],
+    "title": "Body_upload_api_annotate_menus_post"
    },
    "CatalogEntry": {
     "properties": {
@@ -384,7 +656,7 @@
      },
      "prices": {
       "items": {
-       "$ref": "#/components/schemas/PriceAnnotation"
+       "$ref": "#/components/schemas/PriceAnnotation-Output"
       },
       "type": "array",
       "title": "Prices",
@@ -458,6 +730,96 @@
     "title": "MenuAnnotation",
     "description": "Ground truth for one menu."
    },
+   "MenuDraft": {
+    "properties": {
+     "lang": {
+      "type": "string",
+      "title": "Lang"
+     },
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/MenuItem"
+      },
+      "type": "array",
+      "title": "Items"
+     },
+     "prices": {
+      "items": {
+       "$ref": "#/components/schemas/PriceAnnotation-Input"
+      },
+      "type": "array",
+      "title": "Prices"
+     },
+     "catalog": {
+      "items": {
+       "$ref": "#/components/schemas/CatalogEntry"
+      },
+      "type": "array",
+      "title": "Catalog",
+      "default": []
+     },
+     "status": {
+      "$ref": "#/components/schemas/Status"
+     },
+     "split": {
+      "type": "string",
+      "title": "Split",
+      "default": "real-test"
+     },
+     "notes": {
+      "type": "string",
+      "title": "Notes",
+      "default": ""
+     }
+    },
+    "type": "object",
+    "required": [
+     "lang",
+     "items",
+     "prices",
+     "status"
+    ],
+    "title": "MenuDraft",
+    "description": "What the editor sends back: everything a person can change."
+   },
+   "MenuForEditor": {
+    "properties": {
+     "annotation": {
+      "$ref": "#/components/schemas/MenuAnnotation"
+     },
+     "status": {
+      "$ref": "#/components/schemas/Status"
+     },
+     "split": {
+      "type": "string",
+      "title": "Split"
+     },
+     "notes": {
+      "type": "string",
+      "title": "Notes"
+     },
+     "prelabel_config": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Prelabel Config"
+     }
+    },
+    "type": "object",
+    "required": [
+     "annotation",
+     "status",
+     "split",
+     "notes",
+     "prelabel_config"
+    ],
+    "title": "MenuForEditor"
+   },
    "MenuItem": {
     "properties": {
      "id": {
@@ -519,6 +881,49 @@
      "bbox"
     ],
     "title": "MenuItem"
+   },
+   "MenuListRow": {
+    "properties": {
+     "menu_id": {
+      "type": "string",
+      "title": "Menu Id"
+     },
+     "status": {
+      "$ref": "#/components/schemas/Status"
+     },
+     "split": {
+      "type": "string",
+      "title": "Split"
+     },
+     "pages": {
+      "type": "integer",
+      "title": "Pages"
+     },
+     "prices": {
+      "type": "integer",
+      "title": "Prices"
+     },
+     "items": {
+      "type": "integer",
+      "title": "Items"
+     },
+     "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Updated At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "menu_id",
+     "status",
+     "split",
+     "pages",
+     "prices",
+     "items",
+     "updated_at"
+    ],
+    "title": "MenuListRow"
    },
    "MenuPrediction": {
     "properties": {
@@ -844,7 +1249,92 @@
     ],
     "title": "PredictionView"
    },
-   "PriceAnnotation": {
+   "PriceAnnotation-Input": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "page": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Page"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "string"
+       }
+      ],
+      "title": "Value"
+     },
+     "value_max": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value Max"
+     },
+     "currency": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Currency"
+     },
+     "kind": {
+      "$ref": "#/components/schemas/PriceKind",
+      "default": "single"
+     },
+     "size_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Size Label"
+     },
+     "bbox": {
+      "$ref": "#/components/schemas/BBox"
+     },
+     "item_ids": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Item Ids",
+      "default": []
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "id",
+     "page",
+     "value",
+     "bbox"
+    ],
+    "title": "PriceAnnotation"
+   },
+   "PriceAnnotation-Output": {
     "properties": {
      "id": {
       "type": "string",
@@ -1292,6 +1782,16 @@
      "real"
     ],
     "title": "Source"
+   },
+   "Status": {
+    "type": "string",
+    "enum": [
+     "new",
+     "prelabeled",
+     "annotated",
+     "reviewed"
+    ],
+    "title": "Status"
    },
    "TextLine": {
     "properties": {

@@ -72,6 +72,79 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/annotate/menus': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Menus */
+    get: operations['list_menus_api_annotate_menus_get']
+    put?: never
+    /** Upload */
+    post: operations['upload_api_annotate_menus_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/annotate/menus/{menu_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Menu */
+    get: operations['get_menu_api_annotate_menus__menu_id__get']
+    /** Save Menu */
+    put: operations['save_menu_api_annotate_menus__menu_id__put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/annotate/menus/{menu_id}/prelabel': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Prelabel
+     * @description Runs the reference pipeline and replaces the draft with its proposal. Costs a few tenths of a cent.
+     */
+    post: operations['prelabel_api_annotate_menus__menu_id__prelabel_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/annotate/menus/{menu_id}/pages/{page}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Page Image */
+    get: operations['page_image_api_annotate_menus__menu_id__pages__page__get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/health': {
     parameters: {
       query?: never
@@ -108,6 +181,11 @@ export interface components {
       x1: number
       /** Y1 */
       y1: number
+    }
+    /** Body_upload_api_annotate_menus_post */
+    Body_upload_api_annotate_menus_post: {
+      /** Files */
+      files: string[]
     }
     /** CatalogEntry */
     CatalogEntry: {
@@ -169,7 +247,7 @@ export interface components {
        * Prices
        * @default []
        */
-      prices: components['schemas']['PriceAnnotation'][]
+      prices: components['schemas']['PriceAnnotation-Output'][]
       /**
        * Catalog
        * @default []
@@ -191,6 +269,45 @@ export interface components {
        */
       tags: string[]
     }
+    /**
+     * MenuDraft
+     * @description What the editor sends back: everything a person can change.
+     */
+    MenuDraft: {
+      /** Lang */
+      lang: string
+      /** Items */
+      items: components['schemas']['MenuItem'][]
+      /** Prices */
+      prices: components['schemas']['PriceAnnotation-Input'][]
+      /**
+       * Catalog
+       * @default []
+       */
+      catalog: components['schemas']['CatalogEntry'][]
+      status: components['schemas']['Status']
+      /**
+       * Split
+       * @default real-test
+       */
+      split: string
+      /**
+       * Notes
+       * @default
+       */
+      notes: string
+    }
+    /** MenuForEditor */
+    MenuForEditor: {
+      annotation: components['schemas']['MenuAnnotation']
+      status: components['schemas']['Status']
+      /** Split */
+      split: string
+      /** Notes */
+      notes: string
+      /** Prelabel Config */
+      prelabel_config: string | null
+    }
     /** MenuItem */
     MenuItem: {
       /** Id */
@@ -206,6 +323,25 @@ export interface components {
       description?: string | null
       /** Catalog Id */
       catalog_id?: string | null
+    }
+    /** MenuListRow */
+    MenuListRow: {
+      /** Menu Id */
+      menu_id: string
+      status: components['schemas']['Status']
+      /** Split */
+      split: string
+      /** Pages */
+      pages: number
+      /** Prices */
+      prices: number
+      /** Items */
+      items: number
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string
     }
     /** MenuPrediction */
     MenuPrediction: {
@@ -314,7 +450,30 @@ export interface components {
       iou: number | null
     }
     /** PriceAnnotation */
-    PriceAnnotation: {
+    'PriceAnnotation-Input': {
+      /** Id */
+      id: string
+      /** Page */
+      page: number
+      /** Value */
+      value: number | string
+      /** Value Max */
+      value_max?: number | string | null
+      /** Currency */
+      currency?: string | null
+      /** @default single */
+      kind: components['schemas']['PriceKind']
+      /** Size Label */
+      size_label?: string | null
+      bbox: components['schemas']['BBox']
+      /**
+       * Item Ids
+       * @default []
+       */
+      item_ids: string[]
+    }
+    /** PriceAnnotation */
+    'PriceAnnotation-Output': {
       /** Id */
       id: string
       /** Page */
@@ -448,6 +607,11 @@ export interface components {
      */
     Source: 'synthetic' | 'real'
     /**
+     * Status
+     * @enum {string}
+     */
+    Status: 'new' | 'prelabeled' | 'annotated' | 'reviewed'
+    /**
      * TextLine
      * @description One visual line of text. Synthetic menus know every line exactly; used to score OCR.
      */
@@ -576,6 +740,188 @@ export interface operations {
       header?: never
       path: {
         run_id: string
+        menu_id: string
+        page: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_menus_api_annotate_menus_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MenuListRow'][]
+        }
+      }
+    }
+  }
+  upload_api_annotate_menus_post: {
+    parameters: {
+      query?: {
+        lang?: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'multipart/form-data': components['schemas']['Body_upload_api_annotate_menus_post']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MenuForEditor']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  get_menu_api_annotate_menus__menu_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        menu_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MenuForEditor']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  save_menu_api_annotate_menus__menu_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        menu_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MenuDraft']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MenuForEditor']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  prelabel_api_annotate_menus__menu_id__prelabel_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        menu_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MenuForEditor']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  page_image_api_annotate_menus__menu_id__pages__page__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
         menu_id: string
         page: number
       }

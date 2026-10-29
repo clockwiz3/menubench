@@ -12,11 +12,12 @@ export const router = createRouter({
       props: true,
     },
     { path: '/compare', name: 'compare', component: () => import('./pages/ComparePage.vue') },
+    { path: '/annotate', name: 'annotate', component: () => import('./pages/AnnotatePage.vue') },
     {
-      path: '/annotate',
-      name: 'annotate',
-      component: () => import('./pages/PlaceholderPage.vue'),
-      props: { title: 'Annotate' },
+      path: '/annotate/:menuId',
+      name: 'annotate-menu',
+      component: () => import('./pages/AnnotateEditorPage.vue'),
+      props: true,
     },
     {
       path: '/try',

@@ -22,3 +22,9 @@ export async function unwrap<T>(
   }
   return data
 }
+
+export type MenuForEditor = S['MenuForEditor']
+export type MenuListRow = S['MenuListRow']
+export type MenuItem = S['MenuItem']
+export type PriceAnnotation = S['PriceAnnotation-Input']
+export type AnnotationStatus = S['Status']

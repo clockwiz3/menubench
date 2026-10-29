@@ -60,9 +60,13 @@ def build_pipeline(cfg: RunConfig, client: LLMClient) -> Pipeline:
 
 
 def load_pages(dataset: Dataset, annotation: MenuAnnotation) -> list[Image.Image]:
+    return load_pages_from(dataset.root, annotation)
+
+
+def load_pages_from(root: Path, annotation: MenuAnnotation) -> list[Image.Image]:
     pages = []
-    for i in range(len(annotation.pages)):
-        with Image.open(dataset.page_path(annotation, i)) as img:
+    for page in annotation.pages:
+        with Image.open(root / page.image) as img:
             pages.append(img.convert("RGB"))
     return pages
 

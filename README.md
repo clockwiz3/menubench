@@ -70,6 +70,10 @@ uv run menubench serve          # http://127.0.0.1:8000
 - **Menu review** — the page with ground truth, predictions colored by outcome (correct, wrong item, old price,
   not on the menu, missed), OCR lines and the raw output of every pipeline stage.
 
+- **Annotate** — upload real menu photos or PDFs, pre-label them with the pipeline, correct boxes, names and
+  price–item links (keys: `I` draw item, `P` draw price, `Del`, `Ctrl+S`). Only finished menus enter `data/real`'s
+  evaluation index.
+
 For frontend development run `npm run dev` in `web/` next to `menubench serve`; TypeScript types for the API
 are generated from the FastAPI schema (`menubench openapi` → `npm run gen:api`).
 

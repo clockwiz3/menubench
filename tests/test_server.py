@@ -2,6 +2,7 @@ import json
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import Any
 
 from fastapi.testclient import TestClient
 from PIL import Image
@@ -86,3 +87,60 @@ def test_not_found(tmp_path: Path) -> None:
     assert client.get("/api/runs/nope").status_code == 404
     assert client.get("/api/runs/r1/menus/..%2F..%2Fsecret/pages/0").status_code == 404
     assert client.get("/api/runs/r1/menus/m1/pages/5").status_code == 404
+
+
+def test_annotate_flow(tmp_path: Path) -> None:
+    import io
+
+    client = TestClient(create_app(Settings(runs_root=tmp_path / "runs", web_dist=tmp_path / "x", data_root=tmp_path)))
+    buf = io.BytesIO()
+    Image.new("RGB", (400, 600), "white").save(buf, format="JPEG")
+    created = client.post("/api/annotate/menus", files=[("files", ("menu.jpg", buf.getvalue(), "image/jpeg"))])
+    assert created.status_code == 201, created.text
+    menu = created.json()
+    menu_id = menu["annotation"]["menu_id"]
+    assert menu["status"] == "new" and menu["annotation"]["source"] == "real"
+    assert client.get(f"/api/annotate/menus/{menu_id}/pages/0").status_code == 200
+
+    box = {"x0": 0.6, "y0": 0.1, "x1": 0.8, "y1": 0.14}
+    draft: dict[str, Any] = {
+        "lang": "ru",
+        "items": [{"id": "i1", "page": 0, "name": "Борщ", "bbox": {**box, "x0": 0.1, "x1": 0.4}}],
+        "prices": [{"id": "p1", "page": 0, "value": "350", "bbox": box, "item_ids": []}],
+        "status": "annotated",
+    }
+    refused = client.put(f"/api/annotate/menus/{menu_id}", json=draft)
+    assert refused.status_code == 422 and "p1" in refused.text  # every price must have its item
+
+    draft["prices"][0]["item_ids"] = ["i1"]
+    saved = client.put(f"/api/annotate/menus/{menu_id}", json=draft)
+    assert saved.status_code == 200, saved.text
+    index = (tmp_path / "real" / "index.jsonl").read_text(encoding="utf-8")
+    assert menu_id in index  # finished menus become part of the real split
+
+    bad = {**draft, "prices": [{**draft["prices"][0], "item_ids": ["missing"]}]}
+    assert client.put(f"/api/annotate/menus/{menu_id}", json=bad).status_code == 422
+    assert client.post("/api/annotate/menus", files=[("files", ("x.txt", b"hello", "text/plain"))]).status_code == 422
+
+
+def test_prediction_to_draft() -> None:
+    from menubench.pipeline.prelabel import prediction_to_draft
+    from menubench.schema import TextLine
+
+    base = MenuAnnotation(
+        menu_id="m", source=Source.REAL, lang="ru", pages=(Page(index=0, width=10, height=10, image="m/page-0.jpg"),)
+    )
+    price_box = BBox(x0=0.7, y0=0.1, x1=0.8, y1=0.13)
+    name_box = BBox(x0=0.1, y0=0.1, x1=0.3, y1=0.13)
+    pred = MenuPrediction(
+        menu_id="m",
+        config="c",
+        prices=(
+            PricePrediction(page=0, value=Decimal(350), bbox=price_box, name="Борщ", confidence=0.9),
+            PricePrediction(page=0, value=Decimal(400), bbox=price_box, name="борщ", confidence=0.9),
+        ),
+        lines=(TextLine(page=0, text="Борщ", bbox=name_box),),
+    )
+    draft = prediction_to_draft(base, pred)
+    assert len(draft.items) == 1 and draft.items[0].bbox == name_box
+    assert [p.item_ids for p in draft.prices] == [("i1",), ("i1",)]

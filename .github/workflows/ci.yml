@@ -42,3 +42,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Browser test of the annotation editor
+        working-directory: .
+        run: |
+          uv sync --locked
+          uv run playwright install --with-deps chromium
+          uv run pytest -m e2e tests/e2e
