@@ -61,6 +61,6 @@ class Pipeline(ABC):
     @abstractmethod
     async def process(self, menu: MenuInput, log: StageLog) -> MenuPrediction: ...
 
-    def estimate_calls(self, pages: int, prices_hint: int) -> list[tuple[str, int]]:
-        """(role, number of image calls) for cost estimation; text-only calls are counted as image calls too."""
-        return [(role, pages) for role in self.roles]
+    def estimate_calls(self, pages: int, prices_hint: int) -> list[tuple[str, int, float, int]]:
+        """(role, calls, share of a page image per call, output tokens per call) for cost estimation."""
+        return [(role, pages, 1.0, 2500) for role in self.roles]

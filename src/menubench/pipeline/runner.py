@@ -35,7 +35,8 @@ class RunConfig(BaseModel):
     models: dict[str, str]
     params: dict[str, Any] = {}
     budget_usd: float | None = 2.0
-    concurrency: int = 4
+    concurrency: int = 4  # menus in flight
+    llm_concurrency: int = 16  # model calls in flight across all menus
 
     @classmethod
     def load(cls, path: Path) -> RunConfig:
@@ -44,9 +45,10 @@ class RunConfig(BaseModel):
 
 def pipelines() -> dict[str, type[Pipeline]]:
     from menubench.pipeline.baselines import OcrHeuristic, VlmEndToEnd
+    from menubench.pipeline.full import FullPipeline
     from menubench.pipeline.ocr_only import OcrOnly
 
-    return {p.name: p for p in (OcrOnly, VlmEndToEnd, OcrHeuristic)}
+    return {p.name: p for p in (OcrOnly, VlmEndToEnd, OcrHeuristic, FullPipeline)}
 
 
 def build_pipeline(cfg: RunConfig, client: LLMClient) -> Pipeline:
@@ -103,9 +105,7 @@ async def run_config(
     (run.path / "predictions.jsonl").write_text("", encoding="utf-8")
 
     cache = ResponseCache()
-    client = LLMClient(
-        cache=cache, mode=mode, meter=UsageMeter(cfg.budget_usd), concurrency=max(4, cfg.concurrency * 2)
-    )
+    client = LLMClient(cache=cache, mode=mode, meter=UsageMeter(cfg.budget_usd), concurrency=cfg.llm_concurrency)
     pipeline = build_pipeline(cfg, client)
     sem = asyncio.Semaphore(cfg.concurrency)
 
@@ -154,12 +154,11 @@ def estimate_cost(cfg: RunConfig) -> dict[str, Any]:
     menus = dataset.ids(cfg.split, cfg.limit)
     for menu_id in menus:
         ann = dataset.annotation(menu_id)
-        for role, calls in pipeline.estimate_calls(len(ann.pages), len(ann.prices) or 30):
+        for role, calls, image_share, out_tokens in pipeline.estimate_calls(len(ann.pages), len(ann.prices) or 30):
             spec = pipeline.models[role]
             page = ann.pages[0]
             scale = min(1.0, spec.max_image_side / max(page.width, page.height))
-            image_tokens = page.width * page.height * scale * scale / 784
-            out_tokens = 30 * max(len(ann.lines), 40)
+            image_tokens = page.width * page.height * scale * scale / 784 * image_share + 300
             p_in, p_out = pricing.get(spec.id, (0.0, 0.0))
             per_role[role] = per_role.get(role, 0.0) + calls * (image_tokens * p_in + out_tokens * p_out)
     return {

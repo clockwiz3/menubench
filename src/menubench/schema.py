@@ -165,6 +165,7 @@ class PricePrediction(_Model):
     bbox: BBox | None = None
     name: str | None = None
     confidence: float = Field(ge=0, le=1)
+    signals: dict[str, float] = Field(default_factory=dict)  # raw evidence behind `confidence`, for calibration
 
 
 class LinkCandidate(_Model):
