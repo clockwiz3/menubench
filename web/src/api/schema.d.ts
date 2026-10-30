@@ -447,6 +447,8 @@ export interface components {
        * @default false
        */
       split_locked: boolean
+      /** Group */
+      group?: string | null
       /** Notes */
       notes: string
       /** Prelabel Config */
@@ -475,6 +477,8 @@ export interface components {
       status: components['schemas']['Status']
       /** Split */
       split: string
+      /** Group */
+      group?: string | null
       /** Pages */
       pages: number
       /** Prices */

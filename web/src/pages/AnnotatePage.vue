@@ -92,6 +92,7 @@ const STATUS_LABEL = {
           <tr>
             <th>Menu</th>
             <th>Status</th>
+            <th>Group</th>
             <th>Split</th>
             <th class="text-right">Pages</th>
             <th class="text-right">Prices</th>
@@ -112,6 +113,7 @@ const STATUS_LABEL = {
               }}</RouterLink>
             </td>
             <td>{{ STATUS_LABEL[m.status] }}</td>
+            <td class="text-ink-2">{{ m.group ?? '—' }}</td>
             <td class="text-ink-2">{{ m.split }}</td>
             <td class="num text-right">{{ m.pages }}</td>
             <td class="num text-right">{{ m.prices }}</td>

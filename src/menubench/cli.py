@@ -214,6 +214,62 @@ def real_split(
     typer.echo(", ".join(f"{k}: {v}" for k, v in sorted(Counter(result.values()).items())) + f" (seed {seed})")
 
 
+@real.command("import")
+def real_import(
+    root: Annotated[Path, typer.Option(help="Dataset folder with loose images dropped into it.")] = Path("data/real"),
+    groups: Annotated[Path | None, typer.Option(help="Venue groups, pins, tags and exclusions (YAML).")] = None,
+    lang: Annotated[str, typer.Option(help="Language for files without a group.")] = "sr",
+) -> None:
+    """Turn loose images in the dataset folder into menus for Annotate, one image per menu."""
+    import yaml
+
+    from menubench.data.real import RealStore, import_folder
+
+    groups = groups or root / "groups.yaml"
+    config = yaml.safe_load(groups.read_text(encoding="utf-8")) if groups.exists() else {}
+    report = import_folder(RealStore(root), config, default_lang=lang)
+    for kind, rows in report.items():
+        if rows:
+            typer.echo(f"{kind}: {len(rows)}")
+            for row in rows:
+                typer.echo(f"  {row}")
+
+
+@real.command("prelabel")
+def real_prelabel(
+    root: Annotated[Path, typer.Option(help="Dataset folder.")] = Path("data/real"),
+    config: Annotated[Path, typer.Option(help="Pipeline used for the proposals.")] = Path("configs/demo.yaml"),
+    dry_run: Annotated[bool, typer.Option(help="Only list the menus that would be pre-labelled.")] = False,
+) -> None:
+    """Pre-label every menu that has not been touched yet (status: new), so Annotate opens with proposals."""
+    import asyncio
+
+    from menubench.data.real import RealStore, Status
+    from menubench.server.annotate_api import prelabel_menu
+
+    store = RealStore(root)
+    todo = [m for m in store.ids() if store.meta(m).status is Status.NEW and store.meta(m).split != "recheck"]
+    typer.echo(f"{len(todo)} menus to pre-label (~$0.006 each)")
+    if dry_run:
+        return
+
+    async def run() -> None:
+        sem = asyncio.Semaphore(3)
+
+        async def one(menu_id: str) -> None:
+            async with sem:
+                try:
+                    await prelabel_menu(store, menu_id, config)
+                    prices = len(store.annotation(menu_id).prices)
+                    typer.echo(f"  {menu_id} ({store.meta(menu_id).group}): {prices} prices")
+                except Exception as exc:  # one bad photo must not stop the batch
+                    typer.echo(f"  {menu_id}: failed: {type(exc).__name__}: {exc}"[:200], err=True)
+
+        await asyncio.gather(*(one(m) for m in todo))
+
+    asyncio.run(run())
+
+
 @real.command("recheck")
 def real_recheck(
     menus: Annotated[str, typer.Argument(help="Comma-separated menu ids to label again, blind.")],

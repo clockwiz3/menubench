@@ -24,6 +24,7 @@ class MenuListRow(BaseModel):
     menu_id: str
     status: Status
     split: str
+    group: str | None = None
     pages: int
     prices: int
     items: int
@@ -48,6 +49,7 @@ class MenuForEditor(BaseModel):
     status: Status
     split: str
     split_locked: bool = False
+    group: str | None = None
     notes: str
     prelabel_config: str | None
 
@@ -64,6 +66,7 @@ def _editor_view(store: RealStore, menu_id: str) -> MenuForEditor:
         status=meta.status,
         split=meta.split,
         split_locked=meta.split_locked or meta.split == "recheck",
+        group=meta.group,
         notes=meta.notes,
         prelabel_config=meta.prelabel_config,
     )
@@ -80,6 +83,7 @@ def list_menus(request: Request) -> list[MenuListRow]:
                 menu_id=menu_id,
                 status=meta.status,
                 split=meta.split,
+                group=meta.group,
                 pages=len(ann.pages),
                 prices=len(ann.prices),
                 items=len(ann.items),
@@ -146,29 +150,34 @@ def save_menu(request: Request, menu_id: str, draft: MenuDraft) -> MenuForEditor
     return _editor_view(store, menu_id)
 
 
-@router.post("/menus/{menu_id}/prelabel", response_model=MenuForEditor)
-async def prelabel(request: Request, menu_id: str) -> MenuForEditor:
-    """Runs the reference pipeline and replaces the draft with its proposal. Costs a few tenths of a cent."""
-    store = _store(request)
-    try:
-        base = store.annotation(menu_id)
-    except KeyError:
-        raise HTTPException(404, "unknown menu") from None
-    config_path: Path = request.app.state.settings.prelabel_config
+async def prelabel_menu(store: RealStore, menu_id: str, config_path: Path) -> None:
+    """Runs the pipeline on one menu and stores its proposal as the draft (status: pre-labelled)."""
+    base = store.annotation(menu_id)
     cfg = RunConfig.load(config_path)
     cache = ResponseCache()
     client = LLMClient(cache=cache, concurrency=cfg.llm_concurrency)
     try:
         pipeline = build_pipeline(cfg, client)
-        menu = MenuInput(menu_id, load_pages_from(store.root, base))
-        prediction = await pipeline.process(menu, StageLog())
-    except LLMError as exc:
-        raise HTTPException(503, f"model call failed: {exc}") from exc
+        prediction = await pipeline.process(MenuInput(menu_id, load_pages_from(store.root, base)), StageLog())
     finally:
         await client.aclose()
         cache.close()
-    draft = prediction_to_draft(base, prediction)
-    store.save(draft, status=Status.PRELABELED, prelabel_config=str(config_path))
+    store.save(prediction_to_draft(base, prediction), status=Status.PRELABELED, prelabel_config=str(config_path))
+
+
+@router.post("/menus/{menu_id}/prelabel", response_model=MenuForEditor)
+async def prelabel(request: Request, menu_id: str) -> MenuForEditor:
+    """Runs the reference pipeline and replaces the draft with its proposal. Costs a few tenths of a cent."""
+    store = _store(request)
+    try:
+        store.annotation(menu_id)
+    except KeyError:
+        raise HTTPException(404, "unknown menu") from None
+    config_path: Path = request.app.state.settings.prelabel_config
+    try:
+        await prelabel_menu(store, menu_id, config_path)
+    except LLMError as exc:
+        raise HTTPException(503, f"model call failed: {exc}") from exc
     return _editor_view(store, menu_id)
 
 

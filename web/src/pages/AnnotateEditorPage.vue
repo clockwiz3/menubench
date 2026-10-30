@@ -300,7 +300,12 @@ const MODES: { value: DrawMode; label: string; key: string }[] = [
 
       <section class="space-y-4 lg:col-span-2">
         <div class="card space-y-3 p-4 text-sm">
-          <h2 class="font-semibold">Menu</h2>
+          <h2 class="font-semibold">
+            Menu
+            <span v-if="menu.group" class="ml-2 text-xs font-normal text-ink-3"
+              >venue group: {{ menu.group }}</span
+            >
+          </h2>
           <div class="grid grid-cols-3 gap-2">
             <label class="text-xs text-ink-3">
               Language

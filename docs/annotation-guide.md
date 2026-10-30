@@ -38,24 +38,27 @@ error than a wrong one, exactly as on a screen. If something is skipped because 
 
 - Value as a number: `1.250` on a Serbian menu is **1250** (dot = thousands), `1.250,00` is 1250, `12.50` on a menu in
   euros or dollars is 12.50.
-- Currency only if printed next to the price or in the menu header for all prices (`din`, `дин`, `RSD` → RSD).
+- Currency only if printed next to the price or in the menu header for all prices (`din`, `дин`, `RSD` → RSD; `KM`, `КМ` → BAM).
 - The price box is tight around the printed price including its currency mark if it touches it; it does not include
   weights, sizes or dot leaders.
 
 ## Tags (slices in reports)
 
-Tick every tag that applies: `printed-pdf`, `photo`, `glare`, `angled`, `low-light`, `chalkboard`, `handwritten`,
+Tick every tag that applies: `screenshot`, `printed-pdf`, `photo`, `glare`, `angled`, `low-light`, `chalkboard`, `handwritten`,
 `multi-column`, `bilingual`, `cyrillic`, `latin`, `mixed-script`, `laminated`, `sizes`, `combo`,
 `partially-unreadable`. Results on real photos are reported per tag.
 
 ## Workflow
 
 1. Before uploading, crop or blur anything that is not the menu: people, faces, car plates, receipts.
-2. **Annotate** → upload (language Serbian) → **Pre-label with pipeline** → fix every box, name and link → tags →
-   **Finish**. Finish is refused while a price has no item.
-3. When all menus are finished, fix the split once:
-   `uv run menubench real split --dev 20 --seed 7`. Test menus are then not run, not looked at in run review and not
+2. Either upload in **Annotate**, or drop files into `data/real/`, list venues in `data/real/groups.yaml` (one group per
+   restaurant; `pin: dev` for menus already seen while tuning; files to exclude) and run
+   `uv run menubench real import`, then `uv run menubench real prelabel` to pre-label all new menus at once.
+3. In **Annotate**: fix every box, name and link → tags → **Finish**. Finish is refused while a price has no item.
+4. When all menus are finished, fix the split once:
+   `uv run menubench real split --dev 20 --seed 7`. Whole venue groups move together, so pages of one restaurant
+   or two photos of one page never sit on both sides; pinned groups go to dev. Test menus are then not run, not looked at in run review and not
    used for any threshold until the pipeline is frozen. The command refuses to reshuffle afterwards.
-4. A week later, relabel five menus without looking at the first labelling:
+5. A week later, relabel five menus without looking at the first labelling:
    `uv run menubench real recheck <id1>,<id2>,<id3>,<id4>,<id5>` creates empty copies; label them in Annotate.
    Then `uv run menubench real agreement` writes the self-agreement to `reports/annotation_agreement.md`.

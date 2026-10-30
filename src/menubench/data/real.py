@@ -36,6 +36,8 @@ class MenuMeta(BaseModel):
     split: str = "real-test"
     split_locked: bool = False  # set once by assign_splits; test menus must not drift into dev afterwards
     source_files: list[str] = Field(default_factory=list)
+    group: str | None = None  # venue; the split moves whole groups so one menu's pages stay on one side
+    pin: str | None = None  # "real-dev" for menus already seen while tuning
     created_at: datetime
     updated_at: datetime
     prelabel_config: str | None = None
@@ -90,7 +92,14 @@ class RealStore:
             raise KeyError(page)
         return self.root / ann.pages[page].image
 
-    def create(self, files: list[tuple[str, bytes]], lang: str = "ru") -> str:
+    def create(
+        self,
+        files: list[tuple[str, bytes]],
+        lang: str = "ru",
+        group: str | None = None,
+        pin: str | None = None,
+        tags: tuple[str, ...] = (),
+    ) -> str:
         images = [img for name, data in files for img in pages_from_upload(name, data)]
         if not images:
             raise UploadError("no pages in the upload")
@@ -103,8 +112,18 @@ class RealStore:
             img.save(folder / f"page-{i}.jpg", format="JPEG", quality=92)
             pages.append(Page(index=i, width=img.width, height=img.height, image=f"{menu_id}/page-{i}.jpg"))
         now = datetime.now(UTC)
-        self._write(folder, MenuAnnotation(menu_id=menu_id, source=Source.REAL, lang=lang, pages=tuple(pages)))
-        meta = MenuMeta(menu_id=menu_id, source_files=[n for n, _ in files], created_at=now, updated_at=now)
+        ann = MenuAnnotation(
+            menu_id=menu_id, source=Source.REAL, lang=lang, pages=tuple(pages), tags=tuple(sorted(tags))
+        )
+        self._write(folder, ann)
+        meta = MenuMeta(
+            menu_id=menu_id,
+            source_files=[n for n, _ in files],
+            group=group,
+            pin=pin,
+            created_at=now,
+            updated_at=now,
+        )
         (folder / "meta.json").write_text(meta.model_dump_json(indent=1), encoding="utf-8")
         return menu_id
 
@@ -146,22 +165,90 @@ class SplitError(RuntimeError):
 
 
 def assign_splits(store: RealStore, dev: int, seed: int, force: bool = False) -> dict[str, str]:
-    """Random, reproducible dev/test assignment of finished menus. Refuses to reshuffle an existing assignment:
-    once test is fixed it must not move, or thresholds end up tuned on it."""
+    """Random, reproducible dev/test assignment of finished menus, by venue group. Pinned groups go to dev first;
+    other groups are shuffled and fill dev up to about `dev` menus, the rest is test. Refuses to reshuffle an
+    existing assignment: once test is fixed it must not move, or thresholds end up tuned on it."""
     import random
 
     finished = [
         m for m in store.ids() if store.meta(m).status.value in FINISHED and store.meta(m).split != RECHECK_SPLIT
     ]
-    assigned = [m for m in finished if store.meta(m).split_locked]
-    if assigned and not force:
-        raise SplitError(f"{len(assigned)} menus already have a fixed split; pass force=True to reshuffle deliberately")
-    order = sorted(finished)
-    random.Random(seed).shuffle(order)
-    result = {m: ("real-dev" if i < dev else "real-test") for i, m in enumerate(order)}
+    if any(store.meta(m).split_locked for m in finished) and not force:
+        locked = sum(store.meta(m).split_locked for m in finished)
+        raise SplitError(f"{locked} menus already have a fixed split; pass force=True to reshuffle deliberately")
+    groups: dict[str, list[str]] = {}
+    for m in sorted(finished):
+        groups.setdefault(store.meta(m).group or f"menu:{m}", []).append(m)
+    pinned = [g for g, ms in groups.items() if any(store.meta(m).pin == "real-dev" for m in ms)]
+    free = sorted(g for g in groups if g not in pinned)
+    random.Random(seed).shuffle(free)
+    result: dict[str, str] = {}
+    in_dev = 0
+    for g in pinned:
+        for m in groups[g]:
+            result[m] = "real-dev"
+        in_dev += len(groups[g])
+    for g in free:
+        split = "real-dev" if in_dev < dev else "real-test"
+        if split == "real-dev":
+            in_dev += len(groups[g])
+        for m in groups[g]:
+            result[m] = split
     for menu_id, split in result.items():
         store.save(store.annotation(menu_id), split=split, split_locked=True)
     return result
+
+
+IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".webp", ".pdf")
+
+
+def import_folder(
+    store: RealStore, config: dict[str, object] | None = None, default_lang: str = "sr"
+) -> dict[str, list[str]]:
+    """Turns loose files dropped into the dataset folder into menus (one file = one menu), using an optional groups
+    config (venue groups, pins, tags, exclusions). Originals move to _originals/ and excluded files to _excluded/.
+    Re-running applies edited groups to menus imported earlier."""
+    import shutil
+
+    config = config or {}
+    excluded: dict[str, str] = dict(config.get("exclude") or {})  # type: ignore[call-overload]
+    by_file: dict[str, tuple[str, dict[str, object]]] = {}
+    for name, group in dict(config.get("groups") or {}).items():  # type: ignore[call-overload]
+        for f in group.get("files", []):
+            by_file[str(f)] = (str(name), group)
+    report: dict[str, list[str]] = {"imported": [], "excluded": [], "regrouped": [], "ungrouped": []}
+    originals = store.root / "_originals"
+    for path in sorted(p for p in store.root.iterdir() if p.is_file() and p.suffix.lower() in IMAGE_SUFFIXES):
+        if path.name in excluded:
+            (store.root / "_excluded").mkdir(exist_ok=True)
+            shutil.move(str(path), store.root / "_excluded" / path.name)
+            report["excluded"].append(f"{path.name}: {excluded[path.name]}")
+            continue
+        group_name, group = by_file.get(path.name, (None, {}))
+        if group_name is None:
+            report["ungrouped"].append(path.name)
+        pin = "real-dev" if group.get("pin") in ("dev", "real-dev") else None
+        tags = tuple(str(t) for t in group.get("tags", []))  # type: ignore[attr-defined]
+        menu_id = store.create(
+            [(path.name, path.read_bytes())],
+            lang=str(group.get("lang") or default_lang),
+            group=group_name,
+            pin=pin,
+            tags=tags,
+        )
+        originals.mkdir(exist_ok=True)
+        shutil.move(str(path), originals / path.name)
+        report["imported"].append(f"{path.name} -> {menu_id} ({group_name or 'no group'})")
+    for menu_id in store.ids():
+        meta = store.meta(menu_id)
+        for source in meta.source_files:
+            if source in by_file:
+                group_name, group = by_file[source]
+                pin = "real-dev" if group.get("pin") in ("dev", "real-dev") else None
+                if (meta.group, meta.pin) != (group_name, pin):
+                    store.save(store.annotation(menu_id), group=group_name, pin=pin)
+                    report["regrouped"].append(f"{menu_id}: {group_name}")
+    return report
 
 
 def create_recheck(store: RealStore, menu_id: str) -> str:
