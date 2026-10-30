@@ -111,3 +111,27 @@ def test_serbian_from_and_inline() -> None:
 
     assert parse_price("od 650 din") == ParsedPrice(Decimal(650), None, PriceKind.FROM, "RSD")
     assert [p.value for _, _, p in find_prices("Ćevapi 10 kom ...... 1.150 din")] == [Decimal(1150)]
+
+
+def test_convertible_marks_and_price_pairs() -> None:
+    from menubench.prices import find_prices
+
+    assert parse_price("8,00 KM") == ParsedPrice(Decimal(8), currency="BAM")
+    assert parse_price("27,50 КМ") == ParsedPrice(Decimal("27.5"), currency="BAM")
+    assert [(p.value, p.currency) for _, _, p in find_prices("250/350 RSD")] == [
+        (Decimal(250), "RSD"),
+        (Decimal(350), "RSD"),
+    ]
+    spans = find_prices("Пуэр 400/600 RSD")
+    assert ["Пуэр 400/600 RSD"[a:b] for a, b, _ in spans] == ["400", "600 RSD"]
+    assert find_prices("Rok 12/05") == []  # a date, not a pair of prices
+    assert [p.value for _, _, p in find_prices("Čaj 250/350")] == [Decimal(250), Decimal(350)]
+
+
+def test_dot_leaders_typed_as_characters() -> None:
+    from menubench.prices import find_prices
+
+    line = "Goveđa juha ................ 8,00 KM"
+    [(start, end, price)] = find_prices(line)
+    assert price.value == Decimal(8) and line[start:end] == "8,00 KM"
+    assert [p.value for _, _, p in find_prices("Rižot 300 g ...... 27,50 KM")] == [Decimal("27.5")]

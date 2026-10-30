@@ -8,13 +8,13 @@ whether it knows which of its answers it can put on a screen without a person ch
 
 **Result:** letting an LLM link menu items to the catalog directly puts the wrong item on **27%** of links. With a
 strong model reading the menu, an independent pipeline checking it, calibrated confidence and a strict linker, wrong
-links drop to **1.2%**, and **66%** of prices go on screens unreviewed at **1.1%** errors — with the threshold chosen
+links drop to **1.1%**, and **78%** of prices go on screens unreviewed at **1.1%** errors — with the threshold chosen
 on the dev split and only then measured on test. The rest goes to a person, with a hint that has the right catalog
 item in the top 3 in 100% of cases.
 
 | approach | pair F1 % | auto-placed % | wrong among auto-placed % | + box off the price % | wrong catalog links % | $/menu |
 |---|---|---|---|---|---|---|
-| Claude reads, pipeline checks, calibrated (v0.2) | 97.2 | 65.6 | 1.1 | 0.5 | 1.2 | 0.0052 |
+| Claude reads, pipeline checks, calibrated (v0.2) | 97.2 | 77.7 | 1.1 | 0.4 | 1.1 | 0.0057 |
 | Claude Haiku 5.5, one call | 97.2 | – | – | – | – | 0.0014 |
 | reference pipeline, calibrated (v0.1) | 70.6 | 4.8 | 15.3 | 0.5 | 6.1 | 0.0041 |
 | reference pipeline + LLM picks the catalog item | 70.6 | 4.8 | 15.3 | 0.5 | 27.1 | 0.0042 |
@@ -33,14 +33,15 @@ to Claude Haiku read the same menus at 97.2%.
 
 **v0.2 — the strong model reads, the v0.1 pipeline checks.** One call is accurate but cannot tell where it is wrong;
 a differently built pipeline fails differently, so their agreement — on the price, the item and where the box is —
-becomes the confidence signal. Calibrated on dev only, its 1% operating point held on test. v0.2 was designed after
+becomes the confidence signal; where the pipeline saw no price, it reads that area again without being told what
+to expect. Calibrated on dev only, its 1% operating point held on test. v0.2 was designed after
 v0.1's test results were known, so the clean check is a hand-labelled golden set of ~50 real menus from Novi Sad,
 being collected now ([dataset card](docs/real-dataset.md), [annotation guide](docs/annotation-guide.md)).
 
 ## What I learned
 
 1. **Safeguards decide what reaches a screen, not model choice.** Direct LLM linking: 27% wrong links; strict linker
-   on prices both opinions trust: 1.2%.
+   on prices both opinions trust: 1.1%.
 2. **A pipeline of cheap calls lost to one strong call** (70.6% vs 97.2% pair F1).
 3. **In-sample calibration is not evidence.** v0.1's calibration error was 0.004 on dev and 0.069 on test.
 4. **Disagreement between differently built systems** made a trustworthy threshold possible where the reader's own

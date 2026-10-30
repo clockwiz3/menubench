@@ -14,14 +14,17 @@ from pathlib import Path
 from typing import Any
 
 from menubench.calibration import Calibrator
+from menubench.detect import find_candidates
 from menubench.detect.refine import refine_prices
 from menubench.eval.match import spatially_close
 from menubench.eval.text import normalize
 from menubench.link import LinkerConfig, arbitrate, decide
+from menubench.llm.boxes import to_tile
+from menubench.ocr import vlm_ocr
 from menubench.pipeline.base import MenuInput, Pipeline, StageLog
 from menubench.pipeline.baselines import VlmEndToEnd
-from menubench.pipeline.full import FullPipeline, _same
-from menubench.schema import LinkDecision, MenuPrediction, PricePrediction
+from menubench.pipeline.full import FullPipeline, Spend, _same
+from menubench.schema import BBox, LinkDecision, MenuPrediction, PricePrediction
 
 
 def _counterpart(price: PricePrediction, others: tuple[PricePrediction, ...]) -> PricePrediction | None:
@@ -85,6 +88,27 @@ def anchor_to_ocr(prices: list[PricePrediction], ocr_prices: tuple[PricePredicti
     return moved
 
 
+def _inside(outer: BBox, inner: BBox) -> bool:
+    ix = max(0.0, min(outer.x1, inner.x1) - max(outer.x0, inner.x0))
+    iy = max(0.0, min(outer.y1, inner.y1) - max(outer.y0, inner.y0))
+    return inner.area > 0 and ix * iy / inner.area >= 0.8
+
+
+def box_on_prices(box: BBox, same_value: list[BBox], all_prices: list[BBox], max_ratio: float = 3.5) -> bool:
+    """The reader's box sits on printed prices: it contains an OCR occurrence of its value and is not much larger
+    than all OCR prices it contains together ("250/350 RSD" in one box is fine; a box over a whole line is not)."""
+    if not any(_inside(box, b) for b in same_value):
+        return False
+    inner = [b for b in all_prices if _inside(box, b)]
+    hull = BBox(
+        x0=min(b.x0 for b in inner),
+        y0=min(b.y0 for b in inner),
+        x1=max(b.x1 for b in inner),
+        y1=max(b.y1 for b in inner),
+    )
+    return box.area <= hull.area * max_ratio
+
+
 def opinion_signals(price: PricePrediction, others: tuple[PricePrediction, ...]) -> dict[str, float]:
     other = _counterpart(price, others)
     duplicates = sum(1 for o in others if o.page == price.page and o.value == price.value)
@@ -92,6 +116,17 @@ def opinion_signals(price: PricePrediction, others: tuple[PricePrediction, ...])
     # wrong text, even when the value and the item agree.
     same_value = [o for o in others if o.page == price.page and o.value == price.value and o.bbox is not None]
     box_iou = max((price.bbox.iou(o.bbox) for o in same_value if o.bbox), default=0.0) if price.bbox else 0.0
+    # A reader box may cover two prices printed together ("250/350 RSD"); it is still on the price if it covers the
+    # OCR occurrence almost fully and is not much larger. A box over a whole line stays off.
+    box_on_price = (
+        box_on_prices(
+            price.bbox,
+            [o.bbox for o in same_value if o.bbox],
+            [o.bbox for o in others if o.bbox and o.page == price.page],
+        )
+        if price.bbox
+        else False
+    )
     return {
         "reader_conf": price.confidence,
         "verifier_found_price": float(other is not None),
@@ -103,7 +138,8 @@ def opinion_signals(price: PricePrediction, others: tuple[PricePrediction, ...])
         "value_ambiguous": float(duplicates > 1),
         "reader_has_box": float(price.bbox is not None),
         "box_iou_with_ocr": round(box_iou, 4),
-        "box_on_ocr_price": float(box_iou >= 0.3),
+        "box_on_ocr_price": float(box_iou >= 0.3 or box_on_price),
+        "verifier_second_look": float(other is not None and other.signals.get("second_look", 0.0) > 0),
     }
 
 
@@ -147,9 +183,70 @@ class SecondOpinion(Pipeline):
         await log.stage("link", mode="strict", decisions=[d.model_dump(mode="json") for d in decisions])
         return tuple(decisions), cost
 
+    async def _second_look(
+        self, menu: MenuInput, read: MenuPrediction, checked: MenuPrediction
+    ) -> tuple[tuple[PricePrediction, ...], float]:
+        """Where the reader has a price and the verifier saw nothing, the verifier reads that area again, at higher
+        zoom and without being told what to expect. Whatever it finds there is attributed the usual way."""
+        missing = [p for p in read.prices if p.bbox is not None and _counterpart(p, checked.prices) is None]
+        if not missing:
+            return checked.prices, 0.0
+        spend = Spend()
+        found: list[PricePrediction] = []
+        lines = list(checked.lines)
+        regions: list[tuple[int, BBox]] = []
+        for price in missing:
+            assert price.bbox is not None
+            b, h = price.bbox, price.bbox.y1 - price.bbox.y0
+            region = BBox(
+                x0=max(0.0, b.x0 - 0.45), y0=max(0.0, b.y0 - 3 * h), x1=min(1.0, b.x1 + 0.05), y1=min(1.0, b.y1 + 3 * h)
+            )
+            for k, (page, other) in enumerate(regions):
+                if page == price.page and region.iou(other) > 0:
+                    region = BBox(
+                        x0=min(region.x0, other.x0),
+                        y0=min(region.y0, other.y0),
+                        x1=max(region.x1, other.x1),
+                        y1=max(region.y1, other.y1),
+                    )
+                    regions.pop(k)
+                    break
+            regions.append((price.page, region))
+        for page, region in regions[:6]:
+            image = menu.pages[page]
+            w, hgt = image.size
+            crop = image.crop(
+                (round(region.x0 * w), round(region.y0 * hgt), round(region.x1 * w), round(region.y1 * hgt))
+            )
+            ocr = await vlm_ocr(self.client, self.verifier.models["ocr"], crop, page=page)
+            spend.usd += ocr.cost_usd
+            lines += [ln.model_copy(update={"bbox": to_tile(ln.bbox, region)}) for ln in ocr.lines]
+        cands = find_candidates(lines)
+        fresh = [
+            c
+            for c in cands
+            if c.line >= len(checked.lines)
+            and not any(
+                o.value == c.parsed.value and o.bbox and spatially_close(o.bbox, c.bbox) for o in checked.prices
+            )
+        ]
+        results = await asyncio.gather(
+            *(self.verifier._attribute(menu.pages[lines[c.line].page], c, lines, cands, spend) for c in fresh)
+        )
+        for prediction, _ in results:
+            if prediction is not None:
+                found.append(prediction.model_copy(update={"signals": {**prediction.signals, "second_look": 1.0}}))
+        return checked.prices + tuple(found), spend.usd
+
     async def process(self, menu: MenuInput, log: StageLog) -> MenuPrediction:
         started = time.perf_counter()
         read, checked = await asyncio.gather(self.reader.process(menu, log), self.verifier.process(menu, log))
+        second_look_cost = 0.0
+        if self.params.get("second_look", True):
+            before = len(checked.prices)
+            verified, second_look_cost = await self._second_look(menu, read, checked)
+            checked = checked.model_copy(update={"prices": verified})
+            await log.stage("second_look", found=len(verified) - before, cost_usd=second_look_cost)
         prices = []
         target = float(self.params.get("target_risk", 0.01))
         for price in read.prices:
@@ -179,6 +276,6 @@ class SecondOpinion(Pipeline):
             prices=tuple(prices),
             links=links,
             lines=checked.lines,
-            cost_usd=read.cost_usd + checked.cost_usd + link_cost,
+            cost_usd=read.cost_usd + checked.cost_usd + second_look_cost + link_cost,
             latency_s=time.perf_counter() - started,
         )

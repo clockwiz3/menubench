@@ -61,3 +61,13 @@ def test_box_agreement_signal() -> None:
     a_line_off = opinion_signals(_p(10, "Pizza", y=0.47), (_p(10, None, y=0.5),))
     assert on_spot["box_on_ocr_price"] == 1.0 and on_spot["box_iou_with_ocr"] > 0.99
     assert a_line_off["box_on_ocr_price"] == 0.0 and a_line_off["box_iou_with_ocr"] < 0.3
+
+
+def test_one_box_over_a_price_pair_is_on_the_price() -> None:
+    reader = PricePrediction(
+        page=0, value=Decimal(250), bbox=BBox(x0=0.6, y0=0.1, x1=0.8, y1=0.13), name="Чай", confidence=0.9
+    )
+    left_half = PricePrediction(page=0, value=Decimal(250), bbox=BBox(x0=0.6, y0=0.1, x1=0.7, y1=0.13), confidence=0.9)
+    assert opinion_signals(reader, (left_half,))["box_on_ocr_price"] == 1.0
+    whole_line = reader.model_copy(update={"bbox": BBox(x0=0.0, y0=0.1, x1=0.9, y1=0.13)})
+    assert opinion_signals(whole_line, (left_half,))["box_on_ocr_price"] == 0.0

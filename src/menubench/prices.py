@@ -32,15 +32,17 @@ _CURRENCY = {
     "дин": "RSD",
     "дин.": "RSD",
     "rsd": "RSD",
+    "km": "BAM",
+    "км": "BAM",
 }
 _PRE = r"(?P<pre>[$€£₽₸])?"
-_POST = r"(?P<post>₽|руб\.?|р\.?|rub|€|\$|₸|тг|usd|eur|din\.?|дин\.?|rsd)?"
+_POST = r"(?P<post>₽|руб\.?|р\.?|rub|€|\$|₸|тг|usd|eur|din\.?|дин\.?|rsd|km|км)?"
 _NUM = r"\d{1,3}(?:[.    ]\d{3})+|\d+"
 _AMOUNT = rf"(?P<num>{_NUM})(?:[.,](?P<dec>\d{{1,2}}))?(?:,-)?"
 _SINGLE = re.compile(rf"^(?P<from>от|from|од|od)?\s*{_PRE}\s?{_AMOUNT}\s?{_POST}$", re.IGNORECASE)
 _RANGE = re.compile(
     rf"^{_PRE}\s?(?P<a>{_NUM})(?:[.,](?P<ad>\d{{1,2}}))?\s?{_POST}\s*[-–—]\s*"
-    rf"(?P<pre2>[$€£₽₸])?\s?(?P<b>{_NUM})(?:[.,](?P<bd>\d{{1,2}}))?\s?(?P<post2>₽|руб\.?|р\.?|€|\$|₸|тг|din\.?|дин\.?|rsd)?$",
+    rf"(?P<pre2>[$€£₽₸])?\s?(?P<b>{_NUM})(?:[.,](?P<bd>\d{{1,2}}))?\s?(?P<post2>₽|руб\.?|р\.?|€|\$|₸|тг|din\.?|дин\.?|rsd|km|км)?$",
     re.IGNORECASE,
 )
 _TRAILING = re.compile(r"^(?P<head>.*?\S)[\s.·…_-]{1,}(?P<tail>(?:от\s|from\s)?[$€£₽₸]?\s?[\d][\d  .,]*\s?\S{0,4})$")
@@ -109,8 +111,11 @@ def split_trailing_price(text: str) -> tuple[str, ParsedPrice] | None:
     return head, parsed
 
 
-_CUR = r"(?:₽|руб\.?|р\.?|€|\$|₸|тг|din\.?|дин\.?|rsd)"
+_CUR = r"(?:₽|руб\.?|р\.?|€|\$|₸|тг|din\.?|дин\.?|rsd|km|км)"
 _N = r"\d{1,3}(?:[.    ]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?"
+# "250/350 RSD": two prices (cup / teapot, small / large) sharing one currency mark.
+_PAIR = re.compile(rf"(?<![\w.,/])({_N})\s?/\s?({_N})(?:\s?({_CUR}))?(?![\d/])", re.IGNORECASE)
+_LEADERS = re.compile(r"\.{2,}|…+|·{2,}|_{3,}")
 _INLINE = re.compile(
     rf"(?<![\w:+/.,()\-])(?:(?:от|from|од|od)\s+)?[$€£₽₸]?\s?(?:{_N})(?:\s?[-–—]\s?[$€£₽₸]?\s?(?:{_N}))?(?:\s?{_CUR}|,-)?(?!\d)",
     re.IGNORECASE,
@@ -124,8 +129,22 @@ def find_prices(text: str) -> list[tuple[int, int, ParsedPrice]]:
     in the middle of a line it is far more likely a weight, a count, a time or part of a name.
     """
     out = []
+    # Dot leaders printed as characters ("Juha ........ 8,00 KM") become spaces; offsets stay the same.
+    text = _LEADERS.sub(lambda m: " " * len(m.group(0)), text)
     stripped = text.rstrip()
-    for m in _INLINE.finditer(text):
+    masked = text
+    for m in _PAIR.finditer(text):
+        a, b, mark = parse_price(m.group(1)), parse_price(m.group(2)), m.group(3)
+        currency = _currency(mark) if mark else None
+        if a is None or b is None:
+            continue
+        # Without a currency mark only an increasing pair at the end of the line counts ("12/05" is a date).
+        if currency is None and (m.end() < len(stripped) or not b.value > a.value or a.value < 10):
+            continue
+        out.append((m.start(1), m.end(1), ParsedPrice(a.value, currency=currency)))
+        out.append((m.start(2), m.end(), ParsedPrice(b.value, currency=currency)))
+        masked = masked[: m.start()] + " " * (m.end() - m.start()) + masked[m.end() :]
+    for m in _INLINE.finditer(masked):
         raw = m.group(0)
         parsed = parse_price(raw.strip())
         if parsed is None:
@@ -138,4 +157,4 @@ def find_prices(text: str) -> list[tuple[int, int, ParsedPrice]]:
                 continue
         start = m.start() + len(raw) - len(raw.lstrip())
         out.append((start, m.end(), parsed))
-    return out
+    return sorted(out, key=lambda item: item[0])

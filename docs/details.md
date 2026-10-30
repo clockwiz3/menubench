@@ -9,7 +9,7 @@
 | config | price F1 % | pair F1 % | AURC ↓ | ECE ↓ | auto-placed % | wrong among auto-placed % | $/menu | p50 s | menus |
 |---|---|---|---|---|---|---|---|---|---|
 | `e2e-claude-haiku55` | 98.7 | 97.2 | 0.007 | 0.086 | – | – | 0.0014 | 10.7 | 197 |
-| `second-opinion-claude-cal` | 98.7 | 97.2 | 0.010 | 0.081 | 65.6 | 1.1 | 0.0052 | 8.0 | 197 |
+| `second-opinion-claude-cal` | 98.7 | 97.2 | 0.008 | 0.077 | 77.7 | 1.1 | 0.0057 | 6.8 | 197 |
 | `e2e-qwen3vl-235b` | 94.0 | 92.7 | 0.052 | 0.043 | – | – | 0.0029 | 35.3 | 197 |
 | `e2e-gemini31-flash-lite` | 93.7 | 92.4 | 0.063 | 0.038 | – | – | 0.0026 | 5.2 | 197 |
 | `e2e-gemini25-flash-lite` | 93.6 | 90.1 | 0.076 | 0.085 | – | – | 0.0005 | 4.8 | 197 |
@@ -32,7 +32,7 @@ Latency of `second-opinion-claude-cal` was measured on cached calls; live, it is
 | `full-gemini25-flash-lite-cal` | 163 | 6.1 | 6.9 | 99.8 | 96.8 | 10 |
 | `full-gemini25-flash-lite-linkdirect` | 2933 | 27.1 | 96.8 | – | 99.1 | 794 |
 | `full-gemini31-attr-cal` | 3 | – (n=3) | 0.0 | 100.0 | 96.8 | 3 |
-| `second-opinion-claude-cal` | 2017 | 1.2 | 62.9 | 100.0 | 96.2 | 24 |
+| `second-opinion-claude-cal` | 2395 | 1.1 | 74.8 | 100.0 | 96.2 | 27 |
 
 ### Ablations of the v0.1 pipeline
 
