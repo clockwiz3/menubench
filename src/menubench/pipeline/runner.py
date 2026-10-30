@@ -111,6 +111,7 @@ async def run_config(
 
     cache = ResponseCache()
     client = LLMClient(cache=cache, mode=mode, meter=UsageMeter(cfg.budget_usd), concurrency=cfg.llm_concurrency)
+    client.source = cfg.name
     pipeline = build_pipeline(cfg, client)
     sem = asyncio.Semaphore(cfg.concurrency)
 

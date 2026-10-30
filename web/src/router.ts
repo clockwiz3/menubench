@@ -11,6 +11,7 @@ export const router = createRouter({
       component: () => import('./pages/MenuReviewPage.vue'),
       props: true,
     },
+    { path: '/usage', name: 'usage', component: () => import('./pages/UsagePage.vue') },
     { path: '/compare', name: 'compare', component: () => import('./pages/ComparePage.vue') },
     { path: '/annotate', name: 'annotate', component: () => import('./pages/AnnotatePage.vue') },
     {

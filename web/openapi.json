@@ -705,6 +705,51 @@
     }
    }
   },
+  "/api/usage": {
+   "get": {
+    "tags": [
+     "usage"
+    ],
+    "summary": "Summary",
+    "operationId": "summary_api_usage_get",
+    "parameters": [
+     {
+      "name": "days",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 365,
+       "minimum": 1,
+       "default": 30,
+       "title": "Days"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/UsageSummary"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/health": {
    "get": {
     "tags": [
@@ -2360,6 +2405,62 @@
      "url"
     ],
     "title": "TryPage"
+   },
+   "UsageSummary": {
+    "properties": {
+     "days": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Days"
+     },
+     "models": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Models"
+     },
+     "series": {
+      "additionalProperties": {
+       "additionalProperties": {
+        "additionalProperties": {
+         "type": "number"
+        },
+        "type": "object"
+       },
+       "type": "object"
+      },
+      "type": "object",
+      "title": "Series"
+     },
+     "by_model": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "By Model"
+     },
+     "by_source": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "By Source"
+     }
+    },
+    "type": "object",
+    "required": [
+     "days",
+     "models",
+     "series",
+     "by_model",
+     "by_source"
+    ],
+    "title": "UsageSummary"
    },
    "ValidationError": {
     "properties": {

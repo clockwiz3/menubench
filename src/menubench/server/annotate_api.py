@@ -156,6 +156,7 @@ async def prelabel_menu(store: RealStore, menu_id: str, config_path: Path) -> No
     cfg = RunConfig.load(config_path)
     cache = ResponseCache()
     client = LLMClient(cache=cache, concurrency=cfg.llm_concurrency)
+    client.source = "prelabel"
     try:
         pipeline = build_pipeline(cfg, client)
         prediction = await pipeline.process(MenuInput(menu_id, load_pages_from(store.root, base)), StageLog())

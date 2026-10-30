@@ -228,6 +228,7 @@ async def _run(job: Job, cfg: RunConfig, state: TryState) -> None:
     started = time.perf_counter()
     cache = ResponseCache()
     client = LLMClient(cache=cache, meter=UsageMeter(budget_usd=0.05), concurrency=cfg.llm_concurrency)
+    client.source = "demo"
 
     async def emit(stage: str, data: dict[str, Any]) -> None:
         job.push({"stage": stage, "t": round(time.perf_counter() - started, 2), **_summary(stage, data)})

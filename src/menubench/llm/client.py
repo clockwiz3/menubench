@@ -116,6 +116,7 @@ class LLMClient:
         self.meter = meter or UsageMeter()
         self._sem = asyncio.Semaphore(concurrency)
         self._http = httpx.AsyncClient(timeout=timeout_s, transport=transport)
+        self.source = ""  # who is calling (run config, demo, pre-labelling): grouped in usage statistics
 
     async def aclose(self) -> None:
         await self._http.aclose()
@@ -153,6 +154,7 @@ class LLMClient:
             hit = self.cache.get(key)
             if hit is not None:
                 body, cost, latency = hit
+                self.cache.record_call(model, self.source, True, cost, latency, body)
                 response = self._parse(body, cost, latency, cached=True)
                 self.meter.add(response)
                 return response
@@ -184,6 +186,7 @@ class LLMClient:
         cost = float(body.get("usage", {}).get("cost") or 0.0)
         if self.cache:
             self.cache.put(key, model, body, cost, latency)
+            self.cache.record_call(model, self.source, False, cost, latency, body)
         response = self._parse(body, cost, latency, cached=False)
         self.meter.add(response)
         return response

@@ -10,6 +10,8 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
+from menubench.llm import usage
+
 DEFAULT_PATH = Path(".cache/llm.sqlite")
 
 
@@ -39,6 +41,7 @@ class ResponseCache:
                 created_at text default current_timestamp)"""
         )
         self._db.commit()
+        usage.ensure_schema(self._db)
 
     def get(self, key: str) -> tuple[dict[str, Any], float, float] | None:
         with self._lock:
@@ -56,6 +59,20 @@ class ResponseCache:
                 (key, model, json.dumps(response, ensure_ascii=False), cost_usd, latency_s),
             )
             self._db.commit()
+
+    def record_call(
+        self, model: str, source: str, cached: bool, cost: float, latency: float, body: dict[str, Any]
+    ) -> None:
+        """Journal entry for usage statistics; a journal failure must never fail the model call itself."""
+        try:
+            with self._lock:
+                usage.record(self._db, model, source, cached, cost, latency, body)
+        except sqlite3.Error:
+            pass
+
+    def summary(self, days: int = 30) -> dict[str, Any]:
+        with self._lock:
+            return usage.summarize(self._db, days)
 
     def close(self) -> None:
         self._db.close()

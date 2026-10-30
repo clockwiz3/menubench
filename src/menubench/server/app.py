@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from menubench import __version__
 from menubench.llm import load_dotenv
 from menubench.runs import RUNS_DIR
-from menubench.server import annotate_api, runs_api, try_api
+from menubench.server import annotate_api, runs_api, try_api, usage_api
 
 WEB_DIST = Path("web/dist")
 
@@ -28,7 +28,7 @@ class Settings:
     try_daily_budget_usd: float = 1.0
     try_uploads_per_ip: int = 10
     trust_proxy: bool = False  # use X-Forwarded-For for rate limits (only behind a trusted proxy)
-    sections: tuple[str, ...] = ("runs", "annotate", "try")
+    sections: tuple[str, ...] = ("runs", "annotate", "try", "usage")
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -43,7 +43,7 @@ class Settings:
             try_uploads_per_ip=int(env.get("MENUBENCH_TRY_UPLOADS_PER_IP", "10")),
             trust_proxy=env.get("MENUBENCH_TRUST_PROXY", "") == "1",
             sections=tuple(
-                s.strip() for s in env.get("MENUBENCH_SECTIONS", "runs,annotate,try").split(",") if s.strip()
+                s.strip() for s in env.get("MENUBENCH_SECTIONS", "runs,annotate,try,usage").split(",") if s.strip()
             ),
         )
 
@@ -54,7 +54,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app = FastAPI(title="MenuBench", version=__version__)
     app.state.settings = settings
     # The annotation tool writes to disk and spends money on pre-labelling: it is off in the public deployment.
-    routers = {"runs": runs_api.router, "annotate": annotate_api.router, "try": try_api.router}
+    routers = {
+        "runs": runs_api.router,
+        "annotate": annotate_api.router,
+        "try": try_api.router,
+        "usage": usage_api.router,
+    }
     for name in settings.sections:
         app.include_router(routers[name])
 

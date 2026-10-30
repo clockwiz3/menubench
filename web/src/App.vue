@@ -7,6 +7,7 @@ const allNav = [
   { to: '/', label: 'Runs', section: 'runs' },
   { to: '/annotate', label: 'Annotate', section: 'annotate' },
   { to: '/try', label: 'Try it', section: 'try' },
+  { to: '/usage', label: 'Usage', section: 'usage' },
 ]
 // The server tells which sections it runs; the public demo only has "try".
 const sections = ref<string[] | null>(null)

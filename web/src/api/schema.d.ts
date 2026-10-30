@@ -284,6 +284,23 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/usage': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Summary */
+    get: operations['summary_api_usage_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/health': {
     parameters: {
       query?: never
@@ -858,6 +875,29 @@ export interface components {
       /** Url */
       url: string
     }
+    /** UsageSummary */
+    UsageSummary: {
+      /** Days */
+      days: string[]
+      /** Models */
+      models: string[]
+      /** Series */
+      series: {
+        [key: string]: {
+          [key: string]: {
+            [key: string]: number
+          }
+        }
+      }
+      /** By Model */
+      by_model: {
+        [key: string]: unknown
+      }[]
+      /** By Source */
+      by_source: {
+        [key: string]: unknown
+      }[]
+    }
     /** ValidationError */
     ValidationError: {
       /** Location */
@@ -1378,6 +1418,37 @@ export interface operations {
           [name: string]: unknown
         }
         content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  summary_api_usage_get: {
+    parameters: {
+      query?: {
+        days?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['UsageSummary']
+        }
       }
       /** @description Validation Error */
       422: {

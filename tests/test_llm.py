@@ -108,3 +108,32 @@ def test_client_retries_transient_errors(tmp_path: Path, monkeypatch: pytest.Mon
 
 async def _instant(_: float) -> None:
     return None
+
+
+def test_usage_journal_counts_paid_calls_and_cache_savings(tmp_path: Path) -> None:
+    body = {
+        "model": "m",
+        "choices": [{"message": {"content": "ok"}}],
+        "usage": {
+            "cost": 0.002,
+            "prompt_tokens": 100,
+            "completion_tokens": 30,
+            "completion_tokens_details": {"reasoning_tokens": 10},
+            "prompt_tokens_details": {"cached_tokens": 40},
+        },
+    }
+
+    async def scenario() -> None:
+        client = _client(tmp_path, lambda _: httpx.Response(200, json=body))
+        client.source = "bench"
+        await client.complete("vendor/model-a", "x")
+        await client.complete("vendor/model-a", "x")  # served by the local cache
+        await client.aclose()
+
+    asyncio.run(scenario())
+    summary = ResponseCache(tmp_path / "c.sqlite").summary(days=2)
+    [row] = summary["by_model"]
+    assert row["model"] == "vendor/model-a" and row["requests"] == 1 and row["cache_hits"] == 1
+    assert row["cost_usd"] == 0.002 and row["saved_usd"] == 0.002
+    assert row["prompt_tokens"] == 100 and row["completion_tokens"] == 20 and row["reasoning_tokens"] == 10
+    assert summary["by_source"][0]["source"] == "bench"
