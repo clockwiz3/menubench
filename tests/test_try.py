@@ -90,3 +90,23 @@ def test_sections_switch_off_the_annotator(tmp_path: Path) -> None:
     client = TestClient(app)
     assert client.get("/api/annotate/menus").status_code == 404
     assert client.get("/api/try/limits").status_code == 200
+
+
+def test_runs_survive_a_restart_and_history_is_local_only(client: TestClient, tmp_path: Path) -> None:
+    job_id = client.post("/api/try/jobs", files={"file": ("menu.jpg", _jpeg(), "image/jpeg")}).json()["job_id"]
+    with client.stream("GET", f"/api/try/jobs/{job_id}/events") as stream:
+        "".join(stream.iter_text())
+    assert (tmp_path / "try" / job_id / "result.json").exists()
+
+    restarted = TestClient(
+        create_app(Settings(runs_root=tmp_path / "runs", web_dist=tmp_path / "x", data_root=tmp_path))
+    )
+    job = restarted.get(f"/api/try/jobs/{job_id}").json()
+    assert job["status"] == "done" and job["prediction"]["prices"][0]["name"] == "Борщ"
+    history = restarted.get("/api/try/history").json()
+    assert [h["job_id"] for h in history] == [job_id] and history[0]["auto_placed"] == 1
+
+    public = TestClient(
+        create_app(Settings(runs_root=tmp_path, web_dist=tmp_path / "x", data_root=tmp_path, sections=("try",)))
+    )
+    assert public.get("/api/try/history").status_code == 404

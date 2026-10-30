@@ -140,6 +140,8 @@ confidence → auto-place or review → strict linking for trusted prices only.
 
 ## What I would do next
 
+- Rotation-aware crops for the verifier: on tilted photos its up-and-left crop reads the name from the row
+  above, so it disagrees with a correct reader and sends good prices to review (safe, but costs automation).
 - Real photos: re-check the v0.2 operating point, and compare the verifier signal with the reader's own confidence.
 - A cheaper verifier: the full v0.1 pipeline is more than a second opinion needs.
 - Calibrate on data that matches deployment (real photos), add image-quality features (blur, perspective) and a

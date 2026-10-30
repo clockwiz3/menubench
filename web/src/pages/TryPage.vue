@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 import { api, unwrap } from '@/api/client'
 import type { components } from '@/api/schema'
 import BBoxCanvas, { type CanvasBox } from '@/components/BBoxCanvas.vue'
-import { num, seconds, usd } from '@/lib/format'
+import { num, seconds, usd, when } from '@/lib/format'
 import { useAsync } from '@/lib/useAsync'
 
 type TryJob = components['schemas']['TryJob']
@@ -74,6 +74,7 @@ function listen(jobId: string) {
       running.value = false
       if (event.stage === 'failed') failure.value = event.message ?? 'the pipeline failed'
       job.value = await unwrap(api.GET('/api/try/jobs/{job_id}', { params: { path: { job_id: jobId } } }))
+      historyTick.value++
     }
   })
   source.onerror = () => {
@@ -81,6 +82,23 @@ function listen(jobId: string) {
     running.value = false
     source?.close()
   }
+}
+
+// Recent live runs; the server answers only on a local install, the public demo keeps uploads private.
+const historyTick = ref(0)
+const { data: history } = useAsync(
+  () => historyTick.value,
+  async () => {
+    const res = await fetch('/api/try/history')
+    return res.ok ? ((await res.json()) as components['schemas']['TryHistoryRow'][]) : []
+  },
+)
+async function openRun(jobId: string) {
+  source?.close()
+  running.value = false
+  failure.value = null
+  events.value = []
+  job.value = await unwrap(api.GET('/api/try/jobs/{job_id}', { params: { path: { job_id: jobId } } }))
 }
 
 function showExample(example: { job: TryJob }) {
@@ -198,6 +216,32 @@ const page = computed(() => job.value?.pages[0])
         <p v-if="gallery && !gallery.length" class="mt-2 text-xs text-ink-3">No examples on this server.</p>
       </div>
     </div>
+
+    <section v-if="history?.length" class="card p-4">
+      <h2 class="text-sm font-semibold">Recent runs on this machine</h2>
+      <p class="text-xs text-ink-3">Kept for 24 hours with their photo; only visible on a local install.</p>
+      <div class="mt-3 flex gap-3 overflow-x-auto pb-1">
+        <button
+          v-for="h in history"
+          :key="h.job_id"
+          class="w-32 shrink-0 overflow-hidden rounded-lg border border-line text-left hover:border-[var(--accent)]"
+          :class="job?.job_id === h.job_id ? 'border-[var(--accent)]' : ''"
+          @click="openRun(h.job_id)"
+        >
+          <img
+            v-if="h.thumbnail"
+            :src="h.thumbnail"
+            alt=""
+            class="h-20 w-full object-cover object-top"
+            loading="lazy"
+          />
+          <div class="p-1.5 text-[11px] leading-tight">
+            <div class="text-ink-1">{{ h.auto_placed }} / {{ h.prices }} auto</div>
+            <div class="text-ink-3">{{ when(h.created_at) }}</div>
+          </div>
+        </button>
+      </div>
+    </section>
 
     <section v-if="running || events.length" class="card p-4">
       <ol class="space-y-2 text-sm">

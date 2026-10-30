@@ -145,6 +145,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/try/history': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * History
+     * @description Recent live runs on this server. Only on a local install: on the public demo, uploads are private.
+     */
+    get: operations['history_api_try_history_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/try/limits': {
     parameters: {
       query?: never
@@ -779,6 +799,26 @@ export interface components {
      * @enum {string}
      */
     TextRole: 'title' | 'section' | 'item' | 'description' | 'price' | 'size' | 'other'
+    /** TryHistoryRow */
+    TryHistoryRow: {
+      /** Job Id */
+      job_id: string
+      /** Status */
+      status: string
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string
+      /** Prices */
+      prices: number
+      /** Auto Placed */
+      auto_placed: number
+      /** Cost Usd */
+      cost_usd: number
+      /** Thumbnail */
+      thumbnail: string | null
+    }
     /** TryJob */
     TryJob: {
       /** Job Id */
@@ -1132,6 +1172,26 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  history_api_try_history_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['TryHistoryRow'][]
         }
       }
     }

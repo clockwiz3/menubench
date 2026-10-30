@@ -431,6 +431,32 @@
     }
    }
   },
+  "/api/try/history": {
+   "get": {
+    "tags": [
+     "try"
+    ],
+    "summary": "History",
+    "description": "Recent live runs on this server. Only on a local install: on the public demo, uploads are private.",
+    "operationId": "history_api_try_history_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/TryHistoryRow"
+         },
+         "type": "array",
+         "title": "Response History Api Try History Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/try/limits": {
    "get": {
     "tags": [
@@ -2167,6 +2193,57 @@
      "other"
     ],
     "title": "TextRole"
+   },
+   "TryHistoryRow": {
+    "properties": {
+     "job_id": {
+      "type": "string",
+      "title": "Job Id"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "prices": {
+      "type": "integer",
+      "title": "Prices"
+     },
+     "auto_placed": {
+      "type": "integer",
+      "title": "Auto Placed"
+     },
+     "cost_usd": {
+      "type": "number",
+      "title": "Cost Usd"
+     },
+     "thumbnail": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Thumbnail"
+     }
+    },
+    "type": "object",
+    "required": [
+     "job_id",
+     "status",
+     "created_at",
+     "prices",
+     "auto_placed",
+     "cost_usd",
+     "thumbnail"
+    ],
+    "title": "TryHistoryRow"
    },
    "TryJob": {
     "properties": {

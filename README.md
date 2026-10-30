@@ -12,6 +12,10 @@ links drop to **1.1%**, and **78%** of prices go on screens unreviewed at **1.1%
 on the dev split and only then measured on test. The rest goes to a person, with a hint that has the right catalog
 item in the top 3 in 100% of cases.
 
+![Live demo: a menu is read, checked by a second opinion, and every price is auto-placed or sent to review](docs/demo.gif)
+
+*Live demo: Claude reads the menu, the pipeline checks it independently, each price is auto-placed (green) or sent to review (amber).*
+
 | approach | pair F1 % | auto-placed % | wrong among auto-placed % | + box off the price % | wrong catalog links % | $/menu |
 |---|---|---|---|---|---|---|
 | Claude reads, pipeline checks, calibrated (v0.2) | 97.2 | 77.7 | 1.1 | 0.4 | 1.1 | 0.0057 |

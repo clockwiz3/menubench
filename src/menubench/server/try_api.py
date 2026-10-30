@@ -100,8 +100,50 @@ def _state(request: Request) -> TryState:
     state: TryState | None = getattr(request.app.state, "try_state", None)
     if state is None:
         state = TryState()
+        _restore(_settings(request).data_root / "try", state)
         request.app.state.try_state = state
     return state
+
+
+RESULT_FILE = "result.json"
+
+
+def _persist(job: Job) -> None:
+    """Finished jobs are written next to their image, so a restart does not lose them (both expire together)."""
+    record = {
+        "job_id": job.job_id,
+        "status": job.status,
+        "error": job.error,
+        "created_at": job.created_at.isoformat(),
+        "pages": [p.model_dump(mode="json") for p in job.pages],
+        "prediction": job.prediction.model_dump(mode="json") if job.prediction else None,
+        "events": job.events,
+    }
+    (job.folder / RESULT_FILE).write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
+
+
+def _restore(root: Path, state: TryState) -> None:
+    if not root.exists():
+        return
+    for folder in root.iterdir():
+        path = folder / RESULT_FILE
+        if not path.exists() or time.time() - folder.stat().st_mtime > KEEP_SECONDS:
+            continue
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+            job = Job(
+                job_id=raw["job_id"],
+                folder=folder,
+                pages=[Page.model_validate(p) for p in raw["pages"]],
+                created_at=datetime.fromisoformat(raw["created_at"]),
+                status=raw["status"],
+                prediction=MenuPrediction.model_validate(raw["prediction"]) if raw["prediction"] else None,
+                error=raw.get("error"),
+                events=list(raw.get("events", [])),
+            )
+        except (ValueError, KeyError):
+            continue  # a half-written or older record: the image alone is not worth restoring
+        state.jobs[job.job_id] = job
 
 
 def _client_ip(request: Request) -> str:
@@ -216,6 +258,39 @@ async def _run(job: Job, cfg: RunConfig, state: TryState) -> None:
     finally:
         await client.aclose()
         cache.close()
+        _persist(job)
+
+
+class TryHistoryRow(BaseModel):
+    job_id: str
+    status: str
+    created_at: datetime
+    prices: int
+    auto_placed: int
+    cost_usd: float
+    thumbnail: str | None
+
+
+@router.get("/history", response_model=list[TryHistoryRow])
+def history(request: Request) -> list[TryHistoryRow]:
+    """Recent live runs on this server. Only on a local install: on the public demo, uploads are private."""
+    if "annotate" not in _settings(request).sections:
+        raise HTTPException(404, "not available on this server")
+    rows = []
+    for job in sorted(_state(request).jobs.values(), key=lambda j: j.created_at, reverse=True):
+        prices = job.prediction.prices if job.prediction else ()
+        rows.append(
+            TryHistoryRow(
+                job_id=job.job_id,
+                status=job.status,
+                created_at=job.created_at,
+                prices=len(prices),
+                auto_placed=sum(bool(p.auto) for p in prices),
+                cost_usd=job.prediction.cost_usd if job.prediction else 0.0,
+                thumbnail=f"/api/try/jobs/{job.job_id}/pages/0" if job.pages else None,
+            )
+        )
+    return rows
 
 
 @router.get("/limits", response_model=TryLimits)
