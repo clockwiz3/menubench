@@ -469,8 +469,10 @@ const MODES: { value: DrawMode; label: string; key: string }[] = [
               >
                 <td class="text-ink-3">{{ p.id }}</td>
                 <td class="num">
-                  {{ p.value
-                  }}<span v-if="p.kind !== 'single'" class="text-xs text-ink-3"> {{ p.kind }}</span>
+                  {{ p.value }}
+                  <span v-if="p.kind !== 'single'" class="ml-1.5 text-xs text-ink-3">
+                    {{ p.kind.replace('_', ' ') }}{{ p.size_label ? ` · ${p.size_label}` : '' }}
+                  </span>
                 </td>
                 <td :class="p.item_ids?.length ? '' : 'text-critical'">
                   {{ p.item_ids?.length ? itemName.get(p.item_ids[0]!) : 'no item' }}
