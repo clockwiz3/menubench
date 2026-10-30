@@ -60,6 +60,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   resize?.disconnect()
   themeObserver.disconnect()
+  cancelAnimationFrame(raf)
 })
 
 const resolve = computed(() => {
@@ -119,6 +120,100 @@ watch(
       props.selected && props.mode === 'select' ? st.findOne(`#${CSS.escape(props.selected)}`) : null
     tr.nodes(node ? [node] : [])
   },
+)
+
+// A selected box sends out two fading rings, so the eye finds it on a busy page.
+const RIPPLE_MS = 700
+const RIPPLE_GAP_MS = 160
+const RIPPLE_GROW = 28
+interface Ripple {
+  key: number
+  id: string
+  start: number
+}
+const ripples = ref<Ripple[]>([])
+const now = ref(0)
+let raf = 0
+let rippleKey = 0
+let pending: string | null = null
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+function tick() {
+  now.value = performance.now()
+  ripples.value = ripples.value.filter((r) => now.value - r.start < RIPPLE_MS)
+  raf = ripples.value.length ? requestAnimationFrame(tick) : 0
+}
+// Selecting from the price table can point at a box outside the visible part of the canvas.
+const marker = ref<HTMLDivElement>()
+const markerStyle = computed(() => {
+  const box = props.boxes.find((b) => b.id === props.selected)
+  if (!box) return { display: 'none' }
+  const px = toPixels(box.bbox)
+  const pad = RIPPLE_GROW
+  return {
+    left: `${px.x - pad}px`,
+    top: `${px.y - pad}px`,
+    width: `${px.width + 2 * pad}px`,
+    height: `${px.height + 2 * pad}px`,
+  }
+})
+function inView(el: HTMLElement): boolean {
+  const r = el.getBoundingClientRect()
+  const frame = container.value?.parentElement?.getBoundingClientRect()
+  const top = Math.max(0, frame?.top ?? 0)
+  const bottom = Math.min(window.innerHeight, frame?.bottom ?? window.innerHeight)
+  const left = Math.max(0, frame?.left ?? 0)
+  const right = Math.min(window.innerWidth, frame?.right ?? window.innerWidth)
+  return r.top >= top && r.bottom <= bottom && r.left >= left && r.right <= right
+}
+const SCROLL_MS = 300
+async function ripple(id: string) {
+  await nextTick()
+  let delay = 0
+  if (marker.value && !inView(marker.value)) {
+    marker.value.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
+    delay = SCROLL_MS
+  }
+  const start = performance.now() + delay
+  ripples.value = [0, 1].map((i) => ({ key: rippleKey++, id, start: start + i * RIPPLE_GAP_MS }))
+  if (!raf) raf = requestAnimationFrame(tick)
+}
+// The box may not be on screen yet (another page is loading), so the ripple waits for it.
+watch(
+  () => props.selected,
+  (id) => (pending = id && !reducedMotion.matches ? id : null),
+)
+watch(
+  () => [props.selected, stage.value.width, rects.value.some((r) => r.box.id === props.selected)] as const,
+  ([id, w, present]) => {
+    if (pending && id === pending && w && present) {
+      pending = null
+      void ripple(id)
+    }
+  },
+)
+const rippleConfigs = computed(() =>
+  ripples.value.flatMap((r) => {
+    const t = (now.value - r.start) / RIPPLE_MS
+    const box = props.boxes.find((b) => b.id === r.id)
+    if (!box || t < 0 || t >= 1) return []
+    const ease = 1 - (1 - t) ** 3
+    const grow = ease * RIPPLE_GROW
+    const px = toPixels(box.bbox)
+    return [
+      {
+        key: r.key,
+        x: px.x - grow,
+        y: px.y - grow,
+        width: px.width + 2 * grow,
+        height: px.height + 2 * grow,
+        cornerRadius: grow * 0.35,
+        stroke: resolve.value(box.color),
+        strokeWidth: 3 - 2 * ease,
+        opacity: 0.9 * (1 - t),
+        listening: false,
+      },
+    ]
+  }),
 )
 
 function commit(id: string, event: Konva.KonvaEventObject<Event>) {
@@ -191,6 +286,7 @@ const draftConfig = computed(() =>
           @dragend="commit(r.box.id, $event)"
           @transformend="commit(r.box.id, $event)"
         />
+        <v-rect v-for="r in rippleConfigs" :key="r.key" :config="r" />
         <v-rect v-if="draftConfig" :config="draftConfig" />
         <v-transformer
           ref="trRef"
@@ -205,5 +301,6 @@ const draftConfig = computed(() =>
       </v-layer>
     </v-stage>
     <div v-else class="flex h-64 items-center justify-center text-sm text-ink-3">Loading image…</div>
+    <div ref="marker" class="pointer-events-none absolute" :style="markerStyle" aria-hidden="true" />
   </div>
 </template>
