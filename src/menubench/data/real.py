@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from menubench.schema import MenuAnnotation, Page, Source
 
 MAX_SIDE = 3000
-FINISHED = ("annotated", "reviewed")
+FINISHED = ("annotated",)
 RECHECK_SPLIT = "recheck"  # blind re-annotations for self-agreement; never part of evaluation
 
 
@@ -27,7 +27,6 @@ class Status(StrEnum):
     NEW = "new"  # uploaded, nothing labelled yet
     PRELABELED = "prelabeled"  # the pipeline proposed boxes; a person has not checked them
     ANNOTATED = "annotated"  # a person labelled every price
-    REVIEWED = "reviewed"  # checked a second time (the agreement subset)
 
 
 class MenuMeta(BaseModel):

@@ -797,7 +797,7 @@ export interface components {
      * Status
      * @enum {string}
      */
-    Status: 'new' | 'prelabeled' | 'annotated' | 'reviewed'
+    Status: 'new' | 'prelabeled' | 'annotated'
     /**
      * TextLine
      * @description One visual line of text. Synthetic menus know every line exactly; used to score OCR.

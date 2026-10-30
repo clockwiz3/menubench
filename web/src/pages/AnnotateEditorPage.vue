@@ -222,6 +222,7 @@ const MODES: { value: DrawMode; label: string; key: string }[] = [
           {{ busy === 'prelabel' ? 'Running pipeline…' : 'Pre-label with pipeline' }}
         </button>
         <button
+          v-if="meta.status !== 'annotated'"
           class="rounded-md border border-line px-3 py-1.5 hover:bg-surface-2 disabled:opacity-50"
           :disabled="!!busy"
           @click="save()"
@@ -236,9 +237,9 @@ const MODES: { value: DrawMode; label: string; key: string }[] = [
               ? 'Fix the problems listed on the right first'
               : 'Save and add to the real test split'
           "
-          @click="save(meta.status === 'annotated' ? 'reviewed' : 'annotated')"
+          @click="save('annotated')"
         >
-          {{ meta.status === 'annotated' ? 'Mark reviewed' : 'Finish' }}
+          {{ meta.status === 'annotated' ? 'Save' : 'Finish' }}
         </button>
       </span>
     </div>

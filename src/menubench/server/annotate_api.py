@@ -126,7 +126,7 @@ def save_menu(request: Request, menu_id: str, draft: MenuDraft) -> MenuForEditor
         base = store.annotation(menu_id)
     except KeyError:
         raise HTTPException(404, "unknown menu") from None
-    if draft.status in (Status.ANNOTATED, Status.REVIEWED):
+    if draft.status is Status.ANNOTATED:
         unlinked = [p.id for p in draft.prices if not p.item_ids]
         if unlinked:
             raise HTTPException(422, f"link every price to an item before finishing: {', '.join(unlinked)}")

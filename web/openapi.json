@@ -2192,8 +2192,7 @@
     "enum": [
      "new",
      "prelabeled",
-     "annotated",
-     "reviewed"
+     "annotated"
     ],
     "title": "Status"
    },

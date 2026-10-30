@@ -42,7 +42,6 @@ const STATUS_LABEL = {
   new: 'New',
   prelabeled: 'Pre-labelled',
   annotated: 'Annotated',
-  reviewed: 'Reviewed',
 } as const
 </script>
 
@@ -51,8 +50,8 @@ const STATUS_LABEL = {
     <div>
       <h1 class="text-2xl font-semibold tracking-tight">Annotate real menus</h1>
       <p class="mt-1 text-sm text-ink-3">
-        Upload photos or PDFs, let the pipeline propose boxes, fix them. Only menus marked annotated or
-        reviewed enter the real test split.
+        Upload photos or PDFs, let the pipeline propose boxes, fix them. Only finished (annotated) menus enter
+        the evaluation.
       </p>
     </div>
 
