@@ -89,3 +89,25 @@ def test_phone_numbers_are_not_prices() -> None:
 
     assert find_prices("Тел. 8 800 555-35-35") == []
     assert find_prices("Call (555) 214-7788") == []
+
+
+@pytest.mark.parametrize(
+    ("text", "value", "currency"),
+    [
+        ("1.250 din", "1250", "RSD"),
+        ("1.250,00 RSD", "1250", "RSD"),
+        ("890 дин.", "890", "RSD"),
+        ("450,00 din", "450", "RSD"),
+        ("12.50", "12.50", None),  # two digits after the dot stay decimals
+    ],
+)
+def test_serbian_prices(text: str, value: str, currency: str | None) -> None:
+    parsed = parse_price(text)
+    assert parsed is not None and parsed.value == Decimal(value) and parsed.currency == currency
+
+
+def test_serbian_from_and_inline() -> None:
+    from menubench.prices import find_prices
+
+    assert parse_price("od 650 din") == ParsedPrice(Decimal(650), None, PriceKind.FROM, "RSD")
+    assert [p.value for _, _, p in find_prices("Ćevapi 10 kom ...... 1.150 din")] == [Decimal(1150)]

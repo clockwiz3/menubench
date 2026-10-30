@@ -419,6 +419,11 @@ export interface components {
        * @default []
        */
       catalog: components['schemas']['CatalogEntry'][]
+      /**
+       * Tags
+       * @default []
+       */
+      tags: string[]
       status: components['schemas']['Status']
       /**
        * Split
@@ -437,6 +442,11 @@ export interface components {
       status: components['schemas']['Status']
       /** Split */
       split: string
+      /**
+       * Split Locked
+       * @default false
+       */
+      split_locked: boolean
       /** Notes */
       notes: string
       /** Prelabel Config */
@@ -649,6 +659,8 @@ export interface components {
       bbox?: components['schemas']['BBox'] | null
       /** Name */
       name?: string | null
+      /** Text */
+      text?: string | null
       /** Confidence */
       confidence: number
       /** Signals */

@@ -1045,6 +1045,14 @@
       "title": "Catalog",
       "default": []
      },
+     "tags": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Tags",
+      "default": []
+     },
      "status": {
       "$ref": "#/components/schemas/Status"
      },
@@ -1080,6 +1088,11 @@
      "split": {
       "type": "string",
       "title": "Split"
+     },
+     "split_locked": {
+      "type": "boolean",
+      "title": "Split Locked",
+      "default": false
      },
      "notes": {
       "type": "string",
@@ -1763,6 +1776,17 @@
        }
       ],
       "title": "Name"
+     },
+     "text": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Text"
      },
      "confidence": {
       "type": "number",

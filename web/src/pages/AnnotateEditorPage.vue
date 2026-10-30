@@ -9,7 +9,43 @@ const props = defineProps<{ menuId: string }>()
 
 const menu = ref<MenuForEditor>()
 const draft = ref<Draft>({ items: [], prices: [] })
-const meta = ref({ lang: 'ru', status: 'new' as AnnotationStatus, split: 'real-test', notes: '' })
+const meta = ref({
+  lang: 'ru',
+  status: 'new' as AnnotationStatus,
+  split: 'real-test',
+  notes: '',
+  tags: [] as string[],
+})
+// Slices the benchmark reports separately on real photos; one menu can have several.
+const TAG_SUGGESTIONS = [
+  'printed-pdf',
+  'photo',
+  'glare',
+  'angled',
+  'low-light',
+  'chalkboard',
+  'handwritten',
+  'multi-column',
+  'bilingual',
+  'cyrillic',
+  'latin',
+  'mixed-script',
+  'laminated',
+  'sizes',
+  'combo',
+]
+const customTag = ref('')
+function toggleTag(tag: string) {
+  const tags = meta.value.tags
+  const i = tags.indexOf(tag)
+  if (i >= 0) tags.splice(i, 1)
+  else tags.push(tag)
+}
+function addCustomTag() {
+  const tag = customTag.value.trim().toLowerCase().replace(/s+/g, '-')
+  if (tag && !meta.value.tags.includes(tag)) meta.value.tags.push(tag)
+  customTag.value = ''
+}
 const error = ref<string | null>(null)
 const busy = ref<'save' | 'prelabel' | null>(null)
 const saved = ref('')
@@ -24,7 +60,13 @@ const zoom = ref(1)
 function load(data: MenuForEditor) {
   menu.value = data
   draft.value = structuredClone({ items: data.annotation.items, prices: data.annotation.prices }) as Draft
-  meta.value = { lang: data.annotation.lang, status: data.status, split: data.split, notes: data.notes }
+  meta.value = {
+    lang: data.annotation.lang,
+    status: data.status,
+    split: data.split,
+    notes: data.notes,
+    tags: [...(data.annotation.tags ?? [])],
+  }
   saved.value = snapshot()
 }
 
@@ -268,14 +310,18 @@ const MODES: { value: DrawMode; label: string; key: string }[] = [
               >
                 <option value="ru">ru</option>
                 <option value="en">en</option>
+                <option value="sr">sr</option>
               </select>
             </label>
             <label class="text-xs text-ink-3">
               Split
               <select
                 v-model="meta.split"
-                class="mt-1 w-full rounded border border-line bg-surface-1 px-2 py-1 text-sm text-ink-1"
+                :disabled="menu.split_locked"
+                :title="menu.split_locked ? 'The split is fixed; test menus stay test' : undefined"
+                class="mt-1 w-full rounded border border-line bg-surface-1 px-2 py-1 text-sm text-ink-1 disabled:bg-surface-2"
               >
+                <option v-if="meta.split === 'recheck'" value="recheck">recheck (blind)</option>
                 <option value="real-test">real-test</option>
                 <option value="real-dev">real-dev</option>
               </select>
@@ -288,6 +334,34 @@ const MODES: { value: DrawMode; label: string; key: string }[] = [
                 class="mt-1 w-full rounded border border-line bg-surface-2 px-2 py-1 text-sm"
               />
             </label>
+          </div>
+          <div>
+            <div class="text-xs text-ink-3">Tags (slices in reports)</div>
+            <div class="mt-1 flex flex-wrap gap-1">
+              <button
+                v-for="tag in [...new Set([...TAG_SUGGESTIONS, ...meta.tags])]"
+                :key="tag"
+                type="button"
+                class="rounded-full border px-2 py-0.5 text-xs"
+                :class="
+                  meta.tags.includes(tag)
+                    ? 'border-[var(--accent)] bg-surface-2 text-ink-1'
+                    : 'border-line text-ink-3'
+                "
+                :aria-pressed="meta.tags.includes(tag)"
+                @click="toggleTag(tag)"
+              >
+                {{ tag }}
+              </button>
+            </div>
+            <form class="mt-2 flex gap-2" @submit.prevent="addCustomTag">
+              <input
+                v-model="customTag"
+                placeholder="own tag"
+                class="w-40 rounded border border-line bg-surface-1 px-2 py-1 text-xs text-ink-1"
+              />
+              <button class="rounded border border-line px-2 py-1 text-xs hover:bg-surface-2">Add</button>
+            </form>
           </div>
         </div>
 

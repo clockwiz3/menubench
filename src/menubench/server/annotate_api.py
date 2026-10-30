@@ -37,6 +37,7 @@ class MenuDraft(BaseModel):
     items: list[MenuItem]
     prices: list[PriceAnnotation]
     catalog: list[CatalogEntry] = []
+    tags: list[str] = []  # slices for reporting: chalkboard, glare, angled, bilingual...
     status: Status
     split: str = "real-test"
     notes: str = ""
@@ -46,6 +47,7 @@ class MenuForEditor(BaseModel):
     annotation: MenuAnnotation
     status: Status
     split: str
+    split_locked: bool = False
     notes: str
     prelabel_config: str | None
 
@@ -61,6 +63,7 @@ def _editor_view(store: RealStore, menu_id: str) -> MenuForEditor:
         annotation=store.annotation(menu_id),
         status=meta.status,
         split=meta.split,
+        split_locked=meta.split_locked or meta.split == "recheck",
         notes=meta.notes,
         prelabel_config=meta.prelabel_config,
     )
@@ -132,11 +135,14 @@ def save_menu(request: Request, menu_id: str, draft: MenuDraft) -> MenuForEditor
             items=tuple(draft.items),
             prices=tuple(draft.prices),
             catalog=tuple(draft.catalog),
+            tags=tuple(sorted({t.strip().lower() for t in draft.tags if t.strip()})),
         )
     except ValidationError as exc:
         problems = "; ".join(f"{'.'.join(map(str, e['loc'])) or 'menu'}: {e['msg']}" for e in exc.errors())
         raise HTTPException(422, problems) from exc
-    store.save(annotation, status=draft.status, split=draft.split, notes=draft.notes)
+    meta = store.meta(menu_id)
+    split = meta.split if meta.split_locked or meta.split == "recheck" else draft.split
+    store.save(annotation, status=draft.status, split=split, notes=draft.notes)
     return _editor_view(store, menu_id)
 
 

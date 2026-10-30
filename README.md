@@ -34,7 +34,8 @@ to Claude Haiku read the same menus at 97.2%.
 **v0.2 — the strong model reads, the v0.1 pipeline checks.** One call is accurate but cannot tell where it is wrong;
 a differently built pipeline fails differently, so their agreement — on the price, the item and where the box is —
 becomes the confidence signal. Calibrated on dev only, its 1% operating point held on test. v0.2 was designed after
-v0.1's test results were known, so real menu photos (being collected) are the clean check.
+v0.1's test results were known, so the clean check is a hand-labelled golden set of ~50 real menus from Novi Sad,
+being collected now ([dataset card](docs/real-dataset.md), [annotation guide](docs/annotation-guide.md)).
 
 ## What I learned
 

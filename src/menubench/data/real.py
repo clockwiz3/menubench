@@ -20,6 +20,7 @@ from menubench.schema import MenuAnnotation, Page, Source
 
 MAX_SIDE = 3000
 FINISHED = ("annotated", "reviewed")
+RECHECK_SPLIT = "recheck"  # blind re-annotations for self-agreement; never part of evaluation
 
 
 class Status(StrEnum):
@@ -33,6 +34,7 @@ class MenuMeta(BaseModel):
     menu_id: str
     status: Status = Status.NEW
     split: str = "real-test"
+    split_locked: bool = False  # set once by assign_splits; test menus must not drift into dev afterwards
     source_files: list[str] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
@@ -133,7 +135,56 @@ class RealStore:
         rows = []
         for menu_id in self.ids():
             meta = self.meta(menu_id)
-            if meta.status.value in FINISHED:
+            if meta.status.value in FINISHED and meta.split != RECHECK_SPLIT:
                 rows.append({"menu_id": menu_id, "split": meta.split, "lang": self.annotation(menu_id).lang})
         self.root.mkdir(parents=True, exist_ok=True)
         (self.root / "index.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+
+class SplitError(RuntimeError):
+    pass
+
+
+def assign_splits(store: RealStore, dev: int, seed: int, force: bool = False) -> dict[str, str]:
+    """Random, reproducible dev/test assignment of finished menus. Refuses to reshuffle an existing assignment:
+    once test is fixed it must not move, or thresholds end up tuned on it."""
+    import random
+
+    finished = [
+        m for m in store.ids() if store.meta(m).status.value in FINISHED and store.meta(m).split != RECHECK_SPLIT
+    ]
+    assigned = [m for m in finished if store.meta(m).split_locked]
+    if assigned and not force:
+        raise SplitError(f"{len(assigned)} menus already have a fixed split; pass force=True to reshuffle deliberately")
+    order = sorted(finished)
+    random.Random(seed).shuffle(order)
+    result = {m: ("real-dev" if i < dev else "real-test") for i, m in enumerate(order)}
+    for menu_id, split in result.items():
+        store.save(store.annotation(menu_id), split=split, split_locked=True)
+    return result
+
+
+def create_recheck(store: RealStore, menu_id: str) -> str:
+    """A blind copy for re-annotation: same pages, no boxes, kept out of evaluation."""
+    import shutil
+
+    source = store.root / menu_id
+    original = store.annotation(menu_id)
+    copy_id = f"{menu_id}-recheck"
+    target = store.root / copy_id
+    if target.exists():
+        raise SplitError(f"{copy_id} already exists")
+    target.mkdir(parents=True)
+    pages = []
+    for page in original.pages:
+        name = Path(page.image).name
+        shutil.copy2(source / name, target / name)
+        pages.append(page.model_copy(update={"image": f"{copy_id}/{name}"}))
+    blank = MenuAnnotation(menu_id=copy_id, source=original.source, lang=original.lang, pages=tuple(pages))
+    store._write(target, blank)
+    now = datetime.now(UTC)
+    meta = MenuMeta(
+        menu_id=copy_id, split=RECHECK_SPLIT, created_at=now, updated_at=now, notes=f"blind recheck of {menu_id}"
+    )
+    (target / "meta.json").write_text(meta.model_dump_json(indent=1), encoding="utf-8")
+    return copy_id

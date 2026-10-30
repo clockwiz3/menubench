@@ -188,3 +188,69 @@ def gallery(
         item = GalleryItem(id=menu_id, title=title, note=note, job=job)
         (out / f"{menu_id}.json").write_text(item.model_dump_json(indent=1), encoding="utf-8")
         typer.echo(f"added {menu_id}")
+
+
+real = typer.Typer(no_args_is_help=True, help="The real-photo dataset: splits and annotation self-agreement.")
+app.add_typer(real, name="real")
+
+
+@real.command("split")
+def real_split(
+    dev: Annotated[int, typer.Option(help="How many finished menus go to real-dev; the rest is real-test.")] = 20,
+    seed: Annotated[int, typer.Option(help="Shuffle seed, recorded so the split can be reproduced.")] = 7,
+    force: Annotated[bool, typer.Option(help="Reshuffle an existing split (only if you mean it).")] = False,
+    root: Annotated[Path, typer.Option(help="Dataset folder.")] = Path("data/real"),
+) -> None:
+    """Fix the dev/test split once. Test menus then stay untouched until the pipeline is frozen."""
+    from collections import Counter
+
+    from menubench.data.real import RealStore, SplitError, assign_splits
+
+    try:
+        result = assign_splits(RealStore(root), dev=dev, seed=seed, force=force)
+    except SplitError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from exc
+    typer.echo(", ".join(f"{k}: {v}" for k, v in sorted(Counter(result.values()).items())) + f" (seed {seed})")
+
+
+@real.command("recheck")
+def real_recheck(
+    menus: Annotated[str, typer.Argument(help="Comma-separated menu ids to label again, blind.")],
+    root: Annotated[Path, typer.Option(help="Dataset folder.")] = Path("data/real"),
+) -> None:
+    """Create empty copies of finished menus for blind re-annotation (do it a week later)."""
+    from menubench.data.real import RealStore, SplitError, create_recheck
+
+    store = RealStore(root)
+    for menu_id in [m.strip() for m in menus.split(",") if m.strip()]:
+        try:
+            copy_id = create_recheck(store, menu_id)
+            typer.echo(f"created {copy_id}: label it in Annotate without looking at the original")
+        except (SplitError, KeyError) as exc:
+            typer.echo(f"{menu_id}: {exc}", err=True)
+
+
+@real.command("agreement")
+def real_agreement(
+    root: Annotated[Path, typer.Option(help="Dataset folder.")] = Path("data/real"),
+    out: Annotated[Path, typer.Option(help="Report file.")] = Path("reports/annotation_agreement.md"),
+) -> None:
+    """Score each blind recheck against the first labelling and write the self-agreement report."""
+    from menubench.data.real import RealStore
+    from menubench.eval.agreement import self_agreement
+
+    result = self_agreement(RealStore(root))
+    if not result["menus"]:
+        typer.echo("No finished rechecks yet.", err=True)
+        raise typer.Exit(code=2)
+    lines = [
+        f"Annotation self-agreement on {result['menus']} menus, {result['prices']} prices, labelled twice blind:",
+        "",
+        f"- same price, same item: **{result['pair_agreement'] * 100:.1f}%**",
+        f"- same price (value and position): {result['price_agreement'] * 100:.1f}%",
+    ]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    text = "\n".join(lines)
+    out.write_text(text + "\n", encoding="utf-8")
+    typer.echo(text)

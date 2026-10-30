@@ -27,15 +27,20 @@ _CURRENCY = {
     "£": "GBP",
     "₸": "KZT",
     "тг": "KZT",
+    "din": "RSD",
+    "din.": "RSD",
+    "дин": "RSD",
+    "дин.": "RSD",
+    "rsd": "RSD",
 }
 _PRE = r"(?P<pre>[$€£₽₸])?"
-_POST = r"(?P<post>₽|руб\.?|р\.?|rub|€|\$|₸|тг|usd|eur)?"
-_NUM = r"\d{1,3}(?:[    ]\d{3})+|\d+"
+_POST = r"(?P<post>₽|руб\.?|р\.?|rub|€|\$|₸|тг|usd|eur|din\.?|дин\.?|rsd)?"
+_NUM = r"\d{1,3}(?:[.    ]\d{3})+|\d+"
 _AMOUNT = rf"(?P<num>{_NUM})(?:[.,](?P<dec>\d{{1,2}}))?(?:,-)?"
-_SINGLE = re.compile(rf"^(?P<from>от|from)?\s*{_PRE}\s?{_AMOUNT}\s?{_POST}$", re.IGNORECASE)
+_SINGLE = re.compile(rf"^(?P<from>от|from|од|od)?\s*{_PRE}\s?{_AMOUNT}\s?{_POST}$", re.IGNORECASE)
 _RANGE = re.compile(
     rf"^{_PRE}\s?(?P<a>{_NUM})(?:[.,](?P<ad>\d{{1,2}}))?\s?{_POST}\s*[-–—]\s*"
-    rf"(?P<pre2>[$€£₽₸])?\s?(?P<b>{_NUM})(?:[.,](?P<bd>\d{{1,2}}))?\s?(?P<post2>₽|руб\.?|р\.?|€|\$|₸|тг)?$",
+    rf"(?P<pre2>[$€£₽₸])?\s?(?P<b>{_NUM})(?:[.,](?P<bd>\d{{1,2}}))?\s?(?P<post2>₽|руб\.?|р\.?|€|\$|₸|тг|din\.?|дин\.?|rsd)?$",
     re.IGNORECASE,
 )
 _TRAILING = re.compile(r"^(?P<head>.*?\S)[\s.·…_-]{1,}(?P<tail>(?:от\s|from\s)?[$€£₽₸]?\s?[\d][\d  .,]*\s?\S{0,4})$")
@@ -104,10 +109,10 @@ def split_trailing_price(text: str) -> tuple[str, ParsedPrice] | None:
     return head, parsed
 
 
-_CUR = r"(?:₽|руб\.?|р\.?|€|\$|₸|тг)"
-_N = r"\d{1,3}(?:[    ]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?"
+_CUR = r"(?:₽|руб\.?|р\.?|€|\$|₸|тг|din\.?|дин\.?|rsd)"
+_N = r"\d{1,3}(?:[.    ]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?"
 _INLINE = re.compile(
-    rf"(?<![\w:+/.,()\-])(?:(?:от|from)\s+)?[$€£₽₸]?\s?(?:{_N})(?:\s?[-–—]\s?[$€£₽₸]?\s?(?:{_N}))?(?:\s?{_CUR}|,-)?(?!\d)",
+    rf"(?<![\w:+/.,()\-])(?:(?:от|from|од|od)\s+)?[$€£₽₸]?\s?(?:{_N})(?:\s?[-–—]\s?[$€£₽₸]?\s?(?:{_N}))?(?:\s?{_CUR}|,-)?(?!\d)",
     re.IGNORECASE,
 )
 

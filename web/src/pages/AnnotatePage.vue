@@ -12,7 +12,7 @@ const { data: menus, error } = useAsync(
   () => unwrap(api.GET('/api/annotate/menus')),
 )
 
-const lang = ref<'ru' | 'en'>('ru')
+const lang = ref<'ru' | 'en' | 'sr'>('sr')
 const uploading = ref(false)
 const uploadError = ref<string | null>(null)
 const dragging = ref(false)
@@ -79,6 +79,7 @@ const STATUS_LABEL = {
         <select v-model="lang" class="rounded border border-line bg-surface-1 px-1 py-0.5">
           <option value="ru">Russian</option>
           <option value="en">English</option>
+          <option value="sr">Serbian</option>
         </select>
       </span>
     </label>
