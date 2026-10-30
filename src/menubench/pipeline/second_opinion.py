@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from menubench.calibration import Calibrator
+from menubench.detect.refine import refine_prices
 from menubench.eval.match import spatially_close
 from menubench.eval.text import normalize
 from menubench.link import LinkerConfig, arbitrate, decide
@@ -52,6 +53,38 @@ def names_agree(reader: str | None, verifier: str | None) -> bool:
     return len(theirs) >= 1 and theirs <= ours
 
 
+def anchor_to_ocr(prices: list[PricePrediction], ocr_prices: tuple[PricePrediction, ...]) -> list[PricePrediction]:
+    """Moves each reader box onto the OCR-found occurrence of the same price nearest to it, one to one.
+
+    The reader knows which item a price belongs to but places boxes loosely; OCR places them well but does not know
+    the items. With repeated prices ("$10" twelve times) a loose box can sit closer to the wrong text than to its
+    own price, so boxes are taken from OCR and only the pairing comes from the reader.
+    """
+    pairs = []
+    for i, price in enumerate(prices):
+        if price.bbox is None:
+            continue
+        height = price.bbox.y1 - price.bbox.y0
+        cx, cy = (price.bbox.x0 + price.bbox.x1) / 2, (price.bbox.y0 + price.bbox.y1) / 2
+        for j, other in enumerate(ocr_prices):
+            if other.bbox is None or other.page != price.page or other.value != price.value:
+                continue
+            ox, oy = (other.bbox.x0 + other.bbox.x1) / 2, (other.bbox.y0 + other.bbox.y1) / 2
+            distance = ((cx - ox) ** 2 + (cy - oy) ** 2) ** 0.5
+            if distance <= max(4 * height, 0.06):
+                pairs.append((distance, i, j))
+    taken_prices: set[int] = set()
+    taken_ocr: set[int] = set()
+    moved = list(prices)
+    for _, i, j in sorted(pairs):
+        if i in taken_prices or j in taken_ocr:
+            continue
+        taken_prices.add(i)
+        taken_ocr.add(j)
+        moved[i] = prices[i].model_copy(update={"bbox": ocr_prices[j].bbox})
+    return moved
+
+
 def opinion_signals(price: PricePrediction, others: tuple[PricePrediction, ...]) -> dict[str, float]:
     other = _counterpart(price, others)
     duplicates = sum(1 for o in others if o.page == price.page and o.value == price.value)
@@ -75,11 +108,10 @@ class SecondOpinion(Pipeline):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         ids = {role: spec.id for role, spec in self.models.items()}
-        self.reader = VlmEndToEnd(
-            self.client, {"vlm": ids["vlm"]}, {"refine_boxes": self.params.get("refine_boxes", False)}
-        )
+        # Boxes are fixed after both opinions are in (anchor to OCR, then snap to ink), not inside the reader.
+        self.reader = VlmEndToEnd(self.client, {"vlm": ids["vlm"]}, {"refine_boxes": False})
         # The verifier runs uncalibrated: its own confidence is one of the signals, not the decision.
-        verifier_params = {k: v for k, v in self.params.items() if k in ("passes", "tiebreak", "refine_boxes")}
+        verifier_params = {k: v for k, v in self.params.items() if k in ("passes", "tiebreak")}
         self.verifier = FullPipeline(
             self.client, {"ocr": ids["ocr"], "attribution": ids["attribution"]}, verifier_params
         )
@@ -129,6 +161,8 @@ class SecondOpinion(Pipeline):
             reader_only=sum(1 - p.signals["verifier_found_price"] for p in prices),
             verifier_prices=len(checked.prices),
         )
+        if self.params.get("refine_boxes", False):
+            prices = list(refine_prices(menu.pages, tuple(anchor_to_ocr(prices, checked.prices))))
         links: tuple[LinkDecision | None, ...] = ()
         link_cost = 0.0
         if self.params.get("link") and menu.catalog:

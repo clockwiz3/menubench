@@ -42,7 +42,11 @@ watch(
 )
 
 onMounted(() => {
-  resize = new ResizeObserver(([entry]) => (width.value = entry?.contentRect.width ?? 0))
+  // Whole pixels and a dead band: a scrollbar appearing or disappearing must not start a resize loop.
+  resize = new ResizeObserver(([entry]) => {
+    const next = Math.floor(entry?.contentRect.width ?? 0)
+    if (Math.abs(next - width.value) > 2) width.value = next
+  })
   if (container.value) resize.observe(container.value)
   media = window.matchMedia('(prefers-color-scheme: dark)')
   media.addEventListener('change', bump)
@@ -113,7 +117,7 @@ function onLeave() {
 </script>
 
 <template>
-  <div ref="container" class="relative w-full overflow-auto">
+  <div ref="container" class="relative w-full">
     <v-stage v-if="image && width" :config="stage">
       <v-layer>
         <v-image :config="{ image, width: stage.width, height: stage.height }" />

@@ -234,7 +234,7 @@ const page = computed(() => job.value?.pages[0])
             ><span class="h-3 w-3 rounded-sm border-2 border-[var(--warning)]" />Needs review</span
           >
         </div>
-        <div class="max-h-[78vh] overflow-auto rounded-md border border-line">
+        <div class="max-h-[78vh] overflow-auto [scrollbar-gutter:stable] rounded-md border border-line">
           <BBoxCanvas :src="page.url" :boxes="boxes" :selected="selected" @select="selected = $event" />
         </div>
       </section>

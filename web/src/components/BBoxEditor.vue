@@ -49,7 +49,11 @@ watch(
   { immediate: true },
 )
 onMounted(() => {
-  resize = new ResizeObserver(([e]) => (width.value = e?.contentRect.width ?? 0))
+  // Whole pixels and a dead band: a scrollbar appearing or disappearing must not start a resize loop.
+  resize = new ResizeObserver(([entry]) => {
+    const next = Math.floor(entry?.contentRect.width ?? 0)
+    if (Math.abs(next - width.value) > 2) width.value = next
+  })
   if (container.value) resize.observe(container.value)
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
 })
@@ -168,11 +172,7 @@ const draftConfig = computed(() =>
 </script>
 
 <template>
-  <div
-    ref="container"
-    class="relative w-full overflow-auto"
-    :class="mode === 'select' ? '' : 'cursor-crosshair'"
-  >
+  <div ref="container" class="relative w-full" :class="mode === 'select' ? '' : 'cursor-crosshair'">
     <v-stage
       v-if="image && width"
       ref="stageRef"

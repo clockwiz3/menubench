@@ -179,7 +179,7 @@ const layerList = [
               Page {{ i + 1 }}
             </button>
           </div>
-          <div class="max-h-[78vh] overflow-auto rounded-md border border-line">
+          <div class="max-h-[78vh] overflow-auto [scrollbar-gutter:stable] rounded-md border border-line">
             <BBoxCanvas
               :src="imageUrl"
               :boxes="boxes"

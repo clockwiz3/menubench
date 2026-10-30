@@ -42,3 +42,15 @@ def test_partial_and_reordered_names_agree() -> None:
     assert names_agree("САЛАТ «ГРЕЧЕСКИЙ» С ТОМАТАМИ И ПЕЧЁНЫМ ПЕРЦЕМ", "САЛАТ «ГРЕЧЕСКИЙ»")
     assert not names_agree(full, "Салат")  # nothing distinctive: any salad would match
     assert not names_agree(full, "САЛАТ «ГРЕЧЕСКИЙ» С ТОМАТАМИ")  # a different dish
+
+
+def test_anchor_pairs_repeated_prices_one_to_one() -> None:
+    from menubench.pipeline.second_opinion import anchor_to_ocr
+
+    # Twelve "$10" on a menu: the reader's boxes sit a line too high, OCR has the real places.
+    reader = [_p(10, "Pizza", y=0.47), _p(10, "Taco", y=0.67)]
+    ocr = (_p(10, None, y=0.70), _p(10, None, y=0.50))
+    moved = anchor_to_ocr(reader, ocr)
+    assert [round(m.bbox.y0, 2) for m in moved if m.bbox] == [0.5, 0.7]
+    far = anchor_to_ocr([_p(10, "Pizza", y=0.1)], (_p(10, None, y=0.9),))
+    assert far[0].bbox == _p(10, "Pizza", y=0.1).bbox  # too far away: keep the reader's box

@@ -242,7 +242,7 @@ const MODES: { value: DrawMode; label: string; key: string }[] = [
             Page {{ i + 1 }}
           </button>
         </div>
-        <div class="max-h-[80vh] overflow-auto rounded-md border border-line">
+        <div class="max-h-[80vh] overflow-auto [scrollbar-gutter:stable] rounded-md border border-line">
           <BBoxEditor
             :src="imageUrl"
             :boxes="boxes"
