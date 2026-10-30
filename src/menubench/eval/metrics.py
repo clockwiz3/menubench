@@ -17,6 +17,7 @@ from menubench.eval.ocr import evaluate_ocr
 from menubench.schema import MenuAnnotation, MenuPrediction
 
 RISK_LEVELS = (0.01, 0.02, 0.05)
+BOX_ON_PRICE_IOU = 0.3
 
 
 def _prf(tp: int, n_pred: int, n_gt: int) -> dict[str, float]:
@@ -116,17 +117,22 @@ def evaluate(pairs: Iterable[tuple[MenuAnnotation, MenuPrediction]]) -> dict[str
     result["linking"] = evaluate_linking((ann, pred, m) for (ann, pred), m in zip(pairs, matches, strict=True))
     result["calibration"] = expected_calibration_error([s.confidence for s in scored], [s.correct for s in scored])
     decided = [
-        (pred.prices[pm.pred_index].auto, pm.outcome is Outcome.CORRECT)
+        (pred.prices[pm.pred_index].auto, pm.outcome is Outcome.CORRECT, pm.iou)
         for (_, pred), match in zip(pairs, matches, strict=True)
         for pm in match.matches
     ]
-    if any(auto is not None for auto, _ in decided):
-        kept = [ok for auto, ok in decided if auto]
+    if any(auto is not None for auto, _, _ in decided):
+        kept = [(ok, iou) for auto, ok, iou in decided if auto]
+        right = sum(ok for ok, _ in kept)
+        # A right price whose box is not on it still puts a frame on the wrong spot of the screen.
+        box_off = sum(ok and (iou is None or iou < BOX_ON_PRICE_IOU) for ok, iou in kept)
         result["operating_point"] = {
             "auto_placed": len(kept),
             "coverage": round(len(kept) / len(decided), 4) if decided else 0.0,
-            "risk": round(1 - sum(kept) / len(kept), 4) if kept else None,
-            "recall": round(sum(kept) / gt_total, 4) if gt_total else 0.0,
+            "risk": round(1 - right / len(kept), 4) if kept else None,
+            "recall": round(right / gt_total, 4) if gt_total else 0.0,
+            "box_off": round(box_off / len(kept), 4) if kept else None,
+            "any_problem": round((len(kept) - right + box_off) / len(kept), 4) if kept else None,
         }
 
     slices: dict[str, dict[str, list[int]]] = defaultdict(lambda: defaultdict(list))

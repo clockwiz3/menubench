@@ -88,6 +88,10 @@ def anchor_to_ocr(prices: list[PricePrediction], ocr_prices: tuple[PricePredicti
 def opinion_signals(price: PricePrediction, others: tuple[PricePrediction, ...]) -> dict[str, float]:
     other = _counterpart(price, others)
     duplicates = sum(1 for o in others if o.page == price.page and o.value == price.value)
+    # Where OCR saw this price: a reader box far from every OCR occurrence of its value is placed loosely or on the
+    # wrong text, even when the value and the item agree.
+    same_value = [o for o in others if o.page == price.page and o.value == price.value and o.bbox is not None]
+    box_iou = max((price.bbox.iou(o.bbox) for o in same_value if o.bbox), default=0.0) if price.bbox else 0.0
     return {
         "reader_conf": price.confidence,
         "verifier_found_price": float(other is not None),
@@ -98,6 +102,8 @@ def opinion_signals(price: PricePrediction, others: tuple[PricePrediction, ...])
         ),
         "value_ambiguous": float(duplicates > 1),
         "reader_has_box": float(price.bbox is not None),
+        "box_iou_with_ocr": round(box_iou, 4),
+        "box_on_ocr_price": float(box_iou >= 0.3),
     }
 
 

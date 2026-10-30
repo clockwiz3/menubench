@@ -54,3 +54,10 @@ def test_anchor_pairs_repeated_prices_one_to_one() -> None:
     assert [round(m.bbox.y0, 2) for m in moved if m.bbox] == [0.5, 0.7]
     far = anchor_to_ocr([_p(10, "Pizza", y=0.1)], (_p(10, None, y=0.9),))
     assert far[0].bbox == _p(10, "Pizza", y=0.1).bbox  # too far away: keep the reader's box
+
+
+def test_box_agreement_signal() -> None:
+    on_spot = opinion_signals(_p(10, "Pizza", y=0.5), (_p(10, None, y=0.5),))
+    a_line_off = opinion_signals(_p(10, "Pizza", y=0.47), (_p(10, None, y=0.5),))
+    assert on_spot["box_on_ocr_price"] == 1.0 and on_spot["box_iou_with_ocr"] > 0.99
+    assert a_line_off["box_on_ocr_price"] == 0.0 and a_line_off["box_iou_with_ocr"] < 0.3

@@ -265,11 +265,20 @@ def headline_table(runs: Runs) -> str:
                 _pct(m["pair"]["f1"]),
                 _pct(op.get("recall")) if op else "–",
                 _rate(op.get("risk"), op.get("auto_placed")) if op else "–",
+                _rate(op.get("box_off"), op.get("auto_placed")) if op else "–",
                 _rate(lk.get("wrong_link_rate"), lk.get("links")) if lk else "–",
                 f"{m['cost']['per_menu_usd']:.4f}",
             ]
         )
-    headers = ["approach", "pair F1 %", "auto-placed %", "wrong among auto-placed %", "wrong catalog links %", "$/menu"]
+    headers = [
+        "approach",
+        "pair F1 %",
+        "auto-placed %",
+        "wrong among auto-placed %",
+        "+ box off the price %",
+        "wrong catalog links %",
+        "$/menu",
+    ]
     return _table(headers, rows)
 
 
