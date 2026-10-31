@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request, UploadFile
@@ -163,7 +163,12 @@ async def prelabel_menu(store: RealStore, menu_id: str, config_path: Path) -> No
     finally:
         await client.aclose()
         cache.close()
-    store.save(prediction_to_draft(base, prediction), status=Status.PRELABELED, prelabel_config=str(config_path))
+    store.save(
+        prediction_to_draft(base, prediction),
+        status=Status.PRELABELED,
+        prelabel_config=str(config_path),
+        prelabeled_at=datetime.now(UTC),
+    )
 
 
 @router.post("/menus/{menu_id}/prelabel", response_model=MenuForEditor)

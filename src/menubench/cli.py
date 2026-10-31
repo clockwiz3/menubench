@@ -240,6 +240,9 @@ def real_prelabel(
     root: Annotated[Path, typer.Option(help="Dataset folder.")] = Path("data/real"),
     config: Annotated[Path, typer.Option(help="Pipeline used for the proposals.")] = Path("configs/demo.yaml"),
     dry_run: Annotated[bool, typer.Option(help="Only list the menus that would be pre-labelled.")] = False,
+    redo: Annotated[
+        bool, typer.Option(help="Also redo pre-labelled drafts nobody has saved since, e.g. after a pipeline fix.")
+    ] = False,
 ) -> None:
     """Pre-label every menu that has not been touched yet (status: new), so Annotate opens with proposals."""
     import asyncio
@@ -248,7 +251,12 @@ def real_prelabel(
     from menubench.server.annotate_api import prelabel_menu
 
     store = RealStore(root)
-    todo = [m for m in store.ids() if store.meta(m).status is Status.NEW and store.meta(m).split != "recheck"]
+    todo = [
+        m
+        for m in store.ids()
+        if store.meta(m).split != "recheck"
+        and (store.meta(m).status is Status.NEW or (redo and store.meta(m).untouched_since_prelabel()))
+    ]
     typer.echo(f"{len(todo)} menus to pre-label (~$0.006 each)")
     if dry_run:
         return

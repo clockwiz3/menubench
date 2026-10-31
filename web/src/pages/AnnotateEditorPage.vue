@@ -420,6 +420,17 @@ const MODES: { value: DrawMode; label: string; key: string }[] = [
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
                 <option value="KZT">KZT</option>
+                <option value="RSD">RSD (din)</option>
+                <option value="BAM">BAM (KM)</option>
+                <option
+                  v-if="
+                    selectedPrice.currency &&
+                    !['RUB', 'USD', 'EUR', 'KZT', 'RSD', 'BAM'].includes(selectedPrice.currency)
+                  "
+                  :value="selectedPrice.currency"
+                >
+                  {{ selectedPrice.currency }}
+                </option>
               </select>
             </label>
             <label class="col-span-2 text-xs text-ink-3">

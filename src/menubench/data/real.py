@@ -40,6 +40,15 @@ class MenuMeta(BaseModel):
     created_at: datetime
     updated_at: datetime
     prelabel_config: str | None = None
+    prelabeled_at: datetime | None = None  # a draft nobody saved since this time can be pre-labelled again
+
+    def untouched_since_prelabel(self) -> bool:
+        return (
+            self.status is Status.PRELABELED
+            and self.prelabeled_at is not None
+            and (self.updated_at - self.prelabeled_at).total_seconds() < 5
+        )
+
     notes: str = ""
 
 
