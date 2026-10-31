@@ -2,7 +2,7 @@
 
 [← README](../README.md) · [Annotation guide](annotation-guide.md)
 
-**Status:** being collected. Numbers below are filled in when the set is finished.
+**Status:** being collected. Numbers below are filled in when the set is finished. The Hugging Face card for the release is drafted in [`hf/README.md`](../hf/README.md).
 
 | | |
 |---|---|
