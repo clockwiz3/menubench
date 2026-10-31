@@ -102,7 +102,9 @@ const rects = computed(() =>
       strokeWidth: b.id === props.selected ? 3 : 2,
       dash: b.dashed ? [6, 4] : undefined,
       fill: 'rgba(0,0,0,0.001)',
-      draggable: b.id === props.selected && props.mode === 'select',
+      // Every box drags in select mode, so press-and-drag works on the first press, not only once selected.
+      draggable: props.mode === 'select',
+      dragDistance: 3, // a click that wobbles a pixel is still a click
       strokeScaleEnabled: false,
     },
   })),
@@ -110,14 +112,17 @@ const rects = computed(() =>
 
 // The transformer follows the selected box.
 watch(
-  () => [props.selected, props.boxes.length, stage.value.width] as const,
+  () => [props.selected, props.mode, props.boxes.length, stage.value.width] as const,
   async () => {
     await nextTick()
     const tr = trRef.value?.getNode()
     const st = stageRef.value?.getNode()
     if (!tr || !st) return
+    // Ids look like `price:p3`; Konva's `#id` selector does not understand the colon, so match the id directly.
     const node =
-      props.selected && props.mode === 'select' ? st.findOne(`#${CSS.escape(props.selected)}`) : null
+      props.selected && props.mode === 'select'
+        ? st.findOne((n: Konva.Node) => n.id() === props.selected)
+        : undefined
     tr.nodes(node ? [node] : [])
   },
 )
@@ -136,6 +141,8 @@ const now = ref(0)
 let raf = 0
 let rippleKey = 0
 let pending: string | null = null
+// A box picked on the canvas is already in view: scrolling to it would yank it from under the cursor mid-drag.
+let pickedOnCanvas = false
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 function tick() {
   now.value = performance.now()
@@ -166,10 +173,10 @@ function inView(el: HTMLElement): boolean {
   return r.top >= top && r.bottom <= bottom && r.left >= left && r.right <= right
 }
 const SCROLL_MS = 300
-async function ripple(id: string) {
+async function ripple(id: string, scroll: boolean) {
   await nextTick()
   let delay = 0
-  if (marker.value && !inView(marker.value)) {
+  if (scroll && marker.value && !inView(marker.value)) {
     marker.value.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' })
     delay = SCROLL_MS
   }
@@ -187,7 +194,8 @@ watch(
   ([id, w, present]) => {
     if (pending && id === pending && w && present) {
       pending = null
-      void ripple(id)
+      void ripple(id, !pickedOnCanvas)
+      pickedOnCanvas = false
     }
   },
 )
@@ -215,6 +223,18 @@ const rippleConfigs = computed(() =>
     ]
   }),
 )
+
+function pick(id: string) {
+  if (props.mode !== 'select') return
+  pickedOnCanvas = id !== props.selected
+  emit('select', id)
+}
+// Dragging takes over: the rings would stay behind at the old spot.
+function onDragStart(id: string) {
+  ripples.value = []
+  pending = null
+  if (id !== props.selected) emit('select', id)
+}
 
 function commit(id: string, event: Konva.KonvaEventObject<Event>) {
   const node = event.target
@@ -282,7 +302,8 @@ const draftConfig = computed(() =>
           v-for="r in rects"
           :key="r.box.id"
           :config="r.config"
-          @mousedown="mode === 'select' && emit('select', r.box.id)"
+          @mousedown="pick(r.box.id)"
+          @dragstart="onDragStart(r.box.id)"
           @dragend="commit(r.box.id, $event)"
           @transformend="commit(r.box.id, $event)"
         />

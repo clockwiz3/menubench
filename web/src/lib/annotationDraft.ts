@@ -84,3 +84,72 @@ export function problems(draft: Draft): Problem[] {
   }
   return out
 }
+
+function center(b: BBox): [number, number] {
+  return [(b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2]
+}
+
+/**
+ * The item a price most likely belongs to: on the same page, the name on the price's row to its left,
+ * else the nearest name above. Rows are compared by vertical distance in box heights.
+ */
+export function nearestItem(draft: Draft, priceId: string): string | null {
+  const price = draft.prices.find((p) => p.id === priceId)
+  if (!price) return null
+  const [px, py] = center(price.bbox)
+  const h = Math.max(price.bbox.y1 - price.bbox.y0, 0.005)
+  let best: { id: string; score: number } | null = null
+  for (const item of draft.items) {
+    if (item.page !== price.page) continue
+    const [ix, iy] = center(item.bbox)
+    const dy = (py - iy) / h // positive: the name sits above the price
+    if (dy < -1) continue // names below the price belong to the next one
+    const score = Math.abs(dy) * 1 + Math.abs(px - ix) * 2 + (item.bbox.x0 > price.bbox.x1 ? 5 : 0)
+    if (!best || score < best.score) best = { id: item.id, score }
+  }
+  return best?.id ?? null
+}
+
+/** Moves (dx, dy) or, with `resize`, grows the right and bottom edges; page-relative, clamped to the page. */
+export function nudge(b: BBox, dx: number, dy: number, resize: boolean): BBox {
+  const clamp = (v: number) => Math.min(1, Math.max(0, v))
+  if (resize) {
+    return {
+      ...b,
+      x1: clamp(Math.max(b.x0 + 0.002, b.x1 + dx)),
+      y1: clamp(Math.max(b.y0 + 0.002, b.y1 + dy)),
+    }
+  }
+  const w = b.x1 - b.x0
+  const h = b.y1 - b.y0
+  const x0 = Math.min(1 - w, Math.max(0, b.x0 + dx))
+  const y0 = Math.min(1 - h, Math.max(0, b.y0 + dy))
+  return { x0, y0, x1: x0 + w, y1: y0 + h }
+}
+
+/** Undo history over JSON snapshots of the draft; consecutive equal snapshots are one step. */
+export class History {
+  private steps: string[] = []
+  private at = -1
+  constructor(private readonly limit = 200) {}
+
+  reset(snapshot: string): void {
+    this.steps = [snapshot]
+    this.at = 0
+  }
+  record(snapshot: string): void {
+    if (this.steps[this.at] === snapshot) return
+    this.steps = this.steps.slice(0, this.at + 1)
+    this.steps.push(snapshot)
+    if (this.steps.length > this.limit) this.steps.shift()
+    this.at = this.steps.length - 1
+  }
+  undo(): string | null {
+    if (this.at <= 0) return null
+    return this.steps[--this.at] ?? null
+  }
+  redo(): string | null {
+    if (this.at >= this.steps.length - 1) return null
+    return this.steps[++this.at] ?? null
+  }
+}
