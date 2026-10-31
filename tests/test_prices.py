@@ -97,6 +97,8 @@ def test_phone_numbers_are_not_prices() -> None:
         ("1.250 din", "1250", "RSD"),
         ("1.250,00 RSD", "1250", "RSD"),
         ("890 дин.", "890", "RSD"),
+        ("990 рсд", "990", "RSD"),
+        ("1.290 РСД", "1290", "RSD"),
         ("450,00 din", "450", "RSD"),
         ("12.50", "12.50", None),  # two digits after the dot stay decimals
     ],
