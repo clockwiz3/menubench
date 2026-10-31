@@ -1136,6 +1136,17 @@
       "type": "string",
       "title": "Notes",
       "default": ""
+     },
+     "source_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source Url"
      }
     },
     "type": "object",
@@ -1179,6 +1190,17 @@
      "notes": {
       "type": "string",
       "title": "Notes"
+     },
+     "source_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source Url"
      },
      "prelabel_config": {
       "anyOf": [

@@ -14,6 +14,7 @@
 | Slices | per-menu tags: printed PDF, photo, glare, angled, low light, chalkboard, handwritten, multi-column, bilingual, script, laminated, sizes, combos |
 | Annotation | one annotator (the author), [written guide](annotation-guide.md) fixed before the first menu, pipeline pre-labelling corrected by hand |
 | Report | `menubench report --split real-dev` (or `real-test`, once) writes `reports/<split>/real.md`: what the split holds, each approach's pair F1 and auto-placed share with errors among them, synthetic vs real, and the same per tag and per venue |
+| Release | `menubench real export` builds the Hugging Face layout in `release/` (refuses until the split is fixed): own photos re-encoded without EXIF, online menus as annotations plus the link from the editor's *Source link* field, venues as opaque `v01`… ids; a screenshot without a link is left out |
 | Self-agreement | five menus relabelled blind a week later: *to be measured* (`reports/annotation_agreement.md`) |
 
 ## Collection and privacy

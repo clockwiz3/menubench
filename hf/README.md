@@ -70,8 +70,9 @@ One row per menu page.
 | Field | Type | Meaning |
 |---|---|---|
 | `menu_id` | string | Stable id, e.g. `real-20261030-ea321b` |
+| `page` | int | Page number within the menu, from 0 |
 | `venue_id` | string | Opaque venue id (`v01`, `v02`, …); all pages of one venue share it and stay in one split |
-| `file_name` | image | The page (`photos` only) |
+| `file_name` | image | The page, re-encoded without EXIF (`photos` only) |
 | `source_url` | string | Where the menu is published (`online` only); the image is not redistributed |
 | `width`, `height` | int | Page size in pixels |
 | `lang` | string | Language the item names are taken from (BCP 47) |

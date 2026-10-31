@@ -318,3 +318,30 @@ def real_agreement(
     text = "\n".join(lines)
     out.write_text(text + "\n", encoding="utf-8")
     typer.echo(text)
+
+
+@real.command("export")
+def real_export(
+    root: Annotated[Path, typer.Option(help="Dataset folder.")] = Path("data/real"),
+    out: Annotated[Path, typer.Option(help="Release folder, ready to upload to Hugging Face.")] = Path("release"),
+    card: Annotated[Path, typer.Option(help="Dataset card copied in as README.md.")] = Path("hf/README.md"),
+    draft: Annotated[
+        bool, typer.Option(help="Allow an unfixed split: a preview of the layout, never to be published.")
+    ] = False,
+) -> None:
+    """Build the public release: own photos without EXIF, online menus as annotations plus a source link."""
+    from menubench.data.export import ExportError, export_release
+    from menubench.data.real import RealStore
+
+    try:
+        report = export_release(RealStore(root), out, card, draft=draft)
+    except ExportError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from None
+    for part, n in report.rows.items():
+        typer.echo(f"  {part}: {n} pages")
+    for menu_id, reason in report.skipped:
+        typer.echo(f"  skipped {menu_id}: {reason}", err=True)
+    typer.echo(f"Wrote {out}. Check every photo for faces and plates before uploading.")
+    if draft:
+        typer.echo("DRAFT: the split is not fixed, do not publish this.", err=True)

@@ -50,6 +50,7 @@ class MenuMeta(BaseModel):
         )
 
     notes: str = ""
+    source_url: str | None = None  # where an online menu is published; its image is not redistributed
 
 
 class UploadError(ValueError):

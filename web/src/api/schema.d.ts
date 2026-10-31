@@ -472,6 +472,8 @@ export interface components {
        * @default
        */
       notes: string
+      /** Source Url */
+      source_url?: string | null
     }
     /** MenuForEditor */
     MenuForEditor: {
@@ -488,6 +490,8 @@ export interface components {
       group?: string | null
       /** Notes */
       notes: string
+      /** Source Url */
+      source_url?: string | null
       /** Prelabel Config */
       prelabel_config: string | null
     }

@@ -122,3 +122,48 @@ def test_real_report_tables(tmp_path: Path) -> None:
     assert "## Synthetic vs real" in text and "| 97.0 | 90.0 |" in text
     assert "– (n=2)" in text  # two auto-placed prices are too few for a rate
     assert "| cafe-a | 2 | 2 | 100.0 | 0 |" in text
+
+
+def test_export_release(tmp_path: Path) -> None:
+    import json
+
+    from menubench.data.export import ExportError, export_release
+
+    store = RealStore(tmp_path / "real")
+    photo, online, bare = (store.create([("m.jpg", _jpeg())]) for _ in range(3))
+    for m, group in ((photo, "cafe-a"), (online, "cafe-b"), (bare, "cafe-c")):
+        _finish(store, m)
+        store.save(store.annotation(m), group=group)
+    store.save(store.annotation(online), source_url="https://example.com/menu")
+    store.save(store.annotation(bare).model_copy(update={"tags": ("screenshot",)}))
+
+    out = tmp_path / "release"
+    with pytest.raises(ExportError):
+        export_release(store, out)  # the split is not fixed yet
+    assign_splits(store, dev=0, seed=7)
+    report = export_release(store, out)
+
+    assert report.rows == {"photos/dev": 0, "online/dev": 0, "photos/test": 1, "online/test": 1}
+    assert report.skipped == [(bare, "screenshot without a source link")]
+    [row] = [json.loads(line) for line in (out / "photos/test/metadata.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert row["file_name"] == f"{photo}-p0.jpg" and (out / "photos/test" / row["file_name"]).exists()
+    assert row["venue_id"] == "v01" and row["prices"][0]["value"] == "350" and row["prices"][0]["item_ids"] == ["i1"]
+    with Image.open(out / "photos/test" / row["file_name"]) as img:
+        assert not img.getexif()
+    [web] = [json.loads(line) for line in (out / "online/test.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert web["source_url"] == "https://example.com/menu" and "file_name" not in web
+    # Venue ids survive the next release.
+    export_release(store, out)
+    assert json.loads((store.root / "venues.json").read_text(encoding="utf-8"))["cafe-a"] == "v01"
+
+
+def test_source_url_must_be_a_web_address() -> None:
+    from pydantic import ValidationError
+
+    from menubench.server.annotate_api import MenuDraft
+
+    base = {"lang": "sr", "items": [], "prices": [], "status": "prelabeled"}
+    assert MenuDraft(**base, source_url="  ").source_url is None
+    assert MenuDraft(**base, source_url="https://cafe.rs/meni").source_url == "https://cafe.rs/meni"
+    with pytest.raises(ValidationError):
+        MenuDraft(**base, source_url="javascript:alert(1)")

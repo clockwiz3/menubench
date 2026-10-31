@@ -16,6 +16,7 @@ build/
 .cache/
 /data/
 /runs/
+/release/
 
 # Editors / OS
 .idea/

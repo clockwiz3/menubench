@@ -14,6 +14,7 @@ const meta = ref({
   status: 'new' as AnnotationStatus,
   split: 'real-test',
   notes: '',
+  source_url: '',
   tags: [] as string[],
 })
 // Slices the benchmark reports separately on real photos; one menu can have several.
@@ -65,6 +66,7 @@ function load(data: MenuForEditor) {
     status: data.status,
     split: data.split,
     notes: data.notes,
+    source_url: data.source_url ?? '',
     tags: [...(data.annotation.tags ?? [])],
   }
   saved.value = snapshot()
@@ -90,6 +92,7 @@ async function save(status?: AnnotationStatus) {
         params: { path: { menu_id: props.menuId } },
         body: {
           ...meta.value,
+          source_url: meta.value.source_url.trim() || null,
           status: status ?? meta.value.status,
           items: draft.value.items,
           catalog: menu.value?.annotation.catalog ?? [],
@@ -341,6 +344,22 @@ const MODES: { value: DrawMode; label: string; key: string }[] = [
               />
             </label>
           </div>
+          <label class="block text-xs text-ink-3">
+            Source link
+            <input
+              v-model="meta.source_url"
+              type="url"
+              inputmode="url"
+              placeholder="https://… where the menu is published (online menus)"
+              class="mt-1 w-full rounded border border-line bg-surface-1 px-2 py-1 text-sm text-ink-1"
+            />
+            <span
+              v-if="meta.tags.includes('screenshot') && !meta.source_url.trim()"
+              class="mt-1 block text-ink-2"
+            >
+              A screenshot without a link stays out of the public release.
+            </span>
+          </label>
           <div>
             <div class="text-xs text-ink-3">Tags (slices in reports)</div>
             <div class="mt-1 flex flex-wrap gap-1">

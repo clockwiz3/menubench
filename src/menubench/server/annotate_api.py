@@ -7,7 +7,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, field_validator
 
 from menubench.data.real import RealStore, Status, UploadError
 from menubench.llm import LLMClient, LLMError, ResponseCache
@@ -42,6 +42,17 @@ class MenuDraft(BaseModel):
     status: Status
     split: str = "real-test"
     notes: str = ""
+    source_url: str | None = None  # page an online menu was taken from; required to release a screenshot
+
+    @field_validator("source_url")
+    @classmethod
+    def _url(cls, v: str | None) -> str | None:
+        v = (v or "").strip()
+        if not v:
+            return None
+        if len(v) > 2000 or not v.startswith(("http://", "https://")) or " " in v:
+            raise ValueError("source_url must be an http(s) address")
+        return v
 
 
 class MenuForEditor(BaseModel):
@@ -51,6 +62,7 @@ class MenuForEditor(BaseModel):
     split_locked: bool = False
     group: str | None = None
     notes: str
+    source_url: str | None = None
     prelabel_config: str | None
 
 
@@ -68,6 +80,7 @@ def _editor_view(store: RealStore, menu_id: str) -> MenuForEditor:
         split_locked=meta.split_locked or meta.split == "recheck",
         group=meta.group,
         notes=meta.notes,
+        source_url=meta.source_url,
         prelabel_config=meta.prelabel_config,
     )
 
@@ -146,7 +159,7 @@ def save_menu(request: Request, menu_id: str, draft: MenuDraft) -> MenuForEditor
         raise HTTPException(422, problems) from exc
     meta = store.meta(menu_id)
     split = meta.split if meta.split_locked or meta.split == "recheck" else draft.split
-    store.save(annotation, status=draft.status, split=split, notes=draft.notes)
+    store.save(annotation, status=draft.status, split=split, notes=draft.notes, source_url=draft.source_url)
     return _editor_view(store, menu_id)
 
 
