@@ -13,6 +13,7 @@
 | Splits | ~20 `real-dev` / ~30 `real-test` by **venue**: all pages of one place stay on one side; venues already seen while tuning are pinned to dev; assigned once (`menubench real split --dev 20 --seed 7`) and locked; test is used only after the pipeline is frozen |
 | Slices | per-menu tags: printed PDF, photo, glare, angled, low light, chalkboard, handwritten, multi-column, bilingual, script, laminated, sizes, combos |
 | Annotation | one annotator (the author), [written guide](annotation-guide.md) fixed before the first menu, pipeline pre-labelling corrected by hand |
+| Report | `menubench report --split real-dev` (or `real-test`, once) writes `reports/<split>/real.md`: what the split holds, each approach's pair F1 and auto-placed share with errors among them, synthetic vs real, and the same per tag and per venue |
 | Self-agreement | five menus relabelled blind a week later: *to be measured* (`reports/annotation_agreement.md`) |
 
 ## Collection and privacy

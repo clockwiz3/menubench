@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from menubench.data.dataset import Dataset
+from menubench.data.real import RealStore
 from menubench.runs import RUNS_DIR, RunDir, list_runs
 
 REPORTS_DIR = Path("reports")
@@ -324,7 +327,186 @@ SECTIONS: dict[str, tuple[str, Callable[[Runs], str]]] = {
 }
 
 
+REAL_DATA = Path("data/real")
+# The approaches compared on real photos; the first one present is the one sliced by tag and venue.
+REAL_CONFIGS = (
+    ("second-opinion-claude-cal", "Claude reads, pipeline checks, calibrated (v0.2)"),
+    ("e2e-claude-haiku55", "Claude Haiku 5.5, one call"),
+    ("full-gemini25-flash-lite-cal", "reference pipeline, calibrated (v0.1)"),
+)
+
+
+def _op_cells(op: dict[str, Any] | None) -> list[str]:
+    if not op:
+        return ["–", "–"]
+    return [_pct(op.get("recall")), _rate(op.get("risk"), op.get("auto_placed"))]
+
+
+def real_dataset_section(data: Path, split: str) -> str:
+    """What the split holds: finished menus only, as evaluation sees them."""
+    dataset = Dataset(data)
+    menus = list(dataset.iter(split))
+    if not menus:
+        return ""
+    store = RealStore(data)
+    venues = {store.meta(m.menu_id).group or m.menu_id for m in menus}
+    prices = [p for m in menus for p in m.prices]
+    tags = Counter(t for m in menus for t in m.tags)
+    tag_prices = Counter(t for m in menus for t in m.tags for _ in m.prices)
+    kinds = Counter(p.kind.value for p in prices)
+    currencies = Counter(p.currency or "not printed" for p in prices)
+    overview = _table(
+        ["menus", "pages", "venues", "items", "prices"],
+        [
+            [
+                str(len(menus)),
+                str(sum(len(m.pages) for m in menus)),
+                str(len(venues)),
+                str(sum(len(m.items) for m in menus)),
+                str(len(prices)),
+            ]
+        ],
+    )
+    tag_rows = [[t, str(n), str(tag_prices[t])] for t, n in sorted(tags.items(), key=lambda kv: (-kv[1], kv[0]))]
+    mix = (
+        ", ".join(f"{k} {v}" for k, v in kinds.most_common())
+        + "; "
+        + ", ".join(f"{k} {v}" for k, v in currencies.most_common())
+    )
+    return "\n\n".join(
+        part
+        for part in (
+            f"## Dataset: `{split}`",
+            overview,
+            f"Price kinds and currencies: {mix}.",
+            _table(["tag", "menus", "prices"], tag_rows),
+        )
+        if part
+    )
+
+
+def real_results_section(runs: Runs, synthetic: Runs) -> str:
+    rows, gap = [], []
+    for name, label in REAL_CONFIGS:
+        if name not in runs:
+            continue
+        m = runs[name][1]
+        op = m.get("operating_point") or {}
+        rows.append(
+            [
+                label,
+                str(m["gt_prices"]),
+                _pct(m["pair"]["f1"]),
+                *_op_cells(op),
+                _rate(op.get("box_off"), op.get("auto_placed")) if op else "–",
+                f"{m['cost']['per_menu_usd']:.4f}",
+            ]
+        )
+        if name in synthetic:
+            s = synthetic[name][1]
+            s_op = s.get("operating_point") or {}
+            gap.append(
+                [
+                    label,
+                    _pct(s["pair"]["f1"]),
+                    _pct(m["pair"]["f1"]),
+                    _pct(s_op.get("recall")),
+                    _pct(op.get("recall")),
+                    _rate(s_op.get("risk"), s_op.get("auto_placed")),
+                    _rate(op.get("risk"), op.get("auto_placed")),
+                ]
+            )
+    if not rows:
+        return ""
+    parts = [
+        "## Results",
+        _table(
+            [
+                "approach",
+                "prices",
+                "pair F1 %",
+                "auto-placed %",
+                "wrong among auto-placed %",
+                "+ box off the price %",
+                "$/menu",
+            ],
+            rows,
+        ),
+    ]
+    if gap:
+        parts += [
+            "## Synthetic vs real",
+            "Thresholds were fitted on synthetic dev only; this is how far they carry to real photos.",
+            _table(
+                [
+                    "approach",
+                    "pair F1 synth %",
+                    "pair F1 real %",
+                    "auto-placed synth %",
+                    "auto-placed real %",
+                    "wrong synth %",
+                    "wrong real %",
+                ],
+                gap,
+            ),
+        ]
+    return "\n\n".join(parts)
+
+
+def real_slices_section(runs: Runs, data: Path) -> str:
+    name = next((n for n, _ in REAL_CONFIGS if n in runs), None)
+    if name is None:
+        return ""
+    m = runs[name][1]
+    tag_rows = [
+        [tag, str(s["menus"]), str(s["gt_prices"]), _pct(s["pair"]["f1"]), *_op_cells(s.get("operating_point"))]
+        for tag, s in sorted(m["slices"].get("tag", {}).items(), key=lambda kv: -kv[1]["gt_prices"])
+    ]
+    store = RealStore(data)
+    venues: dict[str, list[int]] = {}
+    for menu_id, row in m.get("per_menu", {}).items():
+        try:
+            group = store.meta(menu_id).group or menu_id
+        except KeyError:  # a menu removed from the dataset since the run
+            continue
+        acc = venues.setdefault(group, [0, 0, 0, 0])
+        acc[0] += 1
+        acc[1] += row["gt"]
+        acc[2] += row["pair_tp"]
+        acc[3] += row["errors"]
+    venue_rows = [
+        [venue, str(n), str(gt), _pct(tp / gt if gt else None), str(err)]
+        for venue, (n, gt, tp, err) in sorted(venues.items(), key=lambda kv: -kv[1][1])
+    ]
+    parts = [f"## By tag\n\n`{name}`. Rates over fewer than {MIN_RATE_BASE} auto-placed prices show the count instead."]
+    parts.append(
+        _table(["tag", "menus", "prices", "pair F1 %", "auto-placed %", "wrong among auto-placed %"], tag_rows)
+    )
+    if venue_rows:
+        parts += ["## By venue", _table(["venue", "menus", "prices", "pairs right %", "errors"], venue_rows)]
+    return "\n\n".join(p for p in parts if p)
+
+
+def real_report(runs: Runs, synthetic: Runs, split: str, data: Path = REAL_DATA) -> str:
+    sections = [
+        f"# Real menus: `{split}`",
+        real_dataset_section(data, split),
+        real_results_section(runs, synthetic),
+        real_slices_section(runs, data),
+    ]
+    if not runs:
+        sections.append(
+            f"No evaluated runs on `{split}` yet. Tune on real-dev "
+            "(`uv run menubench run <config> --dataset data/real --split real-dev`); "
+            "real-test is run once, after the pipeline is frozen."
+        )
+    return "\n\n".join(s for s in sections if s) + "\n"
+
+
 def write_reports(root: Path = RUNS_DIR, out: Path = REPORTS_DIR, split: str = "test") -> list[Path]:
+    # README tables come from synthetic test; any other split gets its own folder so it never overwrites them.
+    if split != "test":
+        out = out / split
     out.mkdir(parents=True, exist_ok=True)
     written = []
     for kind, (prefix, build) in SECTIONS.items():
@@ -338,4 +520,10 @@ def write_reports(root: Path = RUNS_DIR, out: Path = REPORTS_DIR, split: str = "
     chart = risk_coverage_chart(latest_runs(root, "", split), out / "risk_coverage.png")
     if chart:
         written.append(chart)
+    if split.startswith("real"):
+        path = out / "real.md"
+        path.write_text(
+            real_report(latest_runs(root, "", split), latest_runs(root, "", "test"), split), encoding="utf-8"
+        )
+        written.append(path)
     return written

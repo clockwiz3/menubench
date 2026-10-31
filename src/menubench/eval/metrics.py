@@ -116,24 +116,9 @@ def evaluate(pairs: Iterable[tuple[MenuAnnotation, MenuPrediction]]) -> dict[str
     result["ocr"] = evaluate_ocr(pairs)
     result["linking"] = evaluate_linking((ann, pred, m) for (ann, pred), m in zip(pairs, matches, strict=True))
     result["calibration"] = expected_calibration_error([s.confidence for s in scored], [s.correct for s in scored])
-    decided = [
-        (pred.prices[pm.pred_index].auto, pm.outcome is Outcome.CORRECT, pm.iou)
-        for (_, pred), match in zip(pairs, matches, strict=True)
-        for pm in match.matches
-    ]
-    if any(auto is not None for auto, _, _ in decided):
-        kept = [(ok, iou) for auto, ok, iou in decided if auto]
-        right = sum(ok for ok, _ in kept)
-        # A right price whose box is not on it still puts a frame on the wrong spot of the screen.
-        box_off = sum(ok and (iou is None or iou < BOX_ON_PRICE_IOU) for ok, iou in kept)
-        result["operating_point"] = {
-            "auto_placed": len(kept),
-            "coverage": round(len(kept) / len(decided), 4) if decided else 0.0,
-            "risk": round(1 - right / len(kept), 4) if kept else None,
-            "recall": round(right / gt_total, 4) if gt_total else 0.0,
-            "box_off": round(box_off / len(kept), 4) if kept else None,
-            "any_problem": round((len(kept) - right + box_off) / len(kept), 4) if kept else None,
-        }
+    op = _operating_point([pred for _, pred in pairs], matches)
+    if op is not None:
+        result["operating_point"] = op
 
     slices: dict[str, dict[str, list[int]]] = defaultdict(lambda: defaultdict(list))
     for i, (ann, _) in enumerate(pairs):
@@ -147,8 +132,11 @@ def evaluate(pairs: Iterable[tuple[MenuAnnotation, MenuPrediction]]) -> dict[str
         dim: {
             key: {
                 k: v
-                for k, v in _summary([matches[i] for i in idx], [pairs[i][1] for i in idx]).items()
-                if k in ("menus", "gt_prices", "price", "pair", "name_accuracy")
+                for k, v in {
+                    **_summary([matches[i] for i in idx], [pairs[i][1] for i in idx]),
+                    "operating_point": _operating_point([pairs[i][1] for i in idx], [matches[i] for i in idx]),
+                }.items()
+                if k in ("menus", "gt_prices", "price", "pair", "name_accuracy", "operating_point") and v is not None
             }
             for key, idx in sorted(groups.items())
         }
@@ -167,6 +155,30 @@ def evaluate(pairs: Iterable[tuple[MenuAnnotation, MenuPrediction]]) -> dict[str
         for m, (_, pred) in zip(matches, pairs, strict=True)
     }
     return result
+
+
+def _operating_point(preds: list[MenuPrediction], matches: list[MenuMatch]) -> dict[str, Any] | None:
+    """What the pipeline's own auto/review decision gives: share placed unattended and how often those are wrong."""
+    decided = [
+        (pred.prices[pm.pred_index].auto, pm.outcome is Outcome.CORRECT, pm.iou)
+        for pred, match in zip(preds, matches, strict=True)
+        for pm in match.matches
+    ]
+    if not any(auto is not None for auto, _, _ in decided):
+        return None
+    gt_total = sum(m.gt_current for m in matches)
+    kept = [(ok, iou) for auto, ok, iou in decided if auto]
+    right = sum(ok for ok, _ in kept)
+    # A right price whose box is not on it still puts a frame on the wrong spot of the screen.
+    box_off = sum(ok and (iou is None or iou < BOX_ON_PRICE_IOU) for ok, iou in kept)
+    return {
+        "auto_placed": len(kept),
+        "coverage": round(len(kept) / len(decided), 4) if decided else 0.0,
+        "risk": round(1 - right / len(kept), 4) if kept else None,
+        "recall": round(right / gt_total, 4) if gt_total else 0.0,
+        "box_off": round(box_off / len(kept), 4) if kept else None,
+        "any_problem": round((len(kept) - right + box_off) / len(kept), 4) if kept else None,
+    }
 
 
 def expected_calibration_error(probs: list[float], labels: list[bool], bins: int = 10) -> dict[str, object]:

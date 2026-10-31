@@ -88,3 +88,37 @@ def test_import_and_split_keep_venues_together(tmp_path: Path) -> None:
     assert any(s == {"real-test"} for s in by_group.values())
     tagged = [m for m in store.ids() if store.meta(m).group == "venue-a"]
     assert all(store.annotation(m).tags == ("photo",) for m in tagged)
+
+
+def test_real_report_tables(tmp_path: Path) -> None:
+    from menubench.report import real_report
+
+    store = RealStore(tmp_path)
+    ids = [store.create([("m.jpg", _jpeg())]) for _ in range(3)]
+    for i, m in enumerate(ids):
+        _finish(store, m)
+        ann = store.annotation(m).model_copy(update={"tags": ("photo", "angled") if i == 0 else ("screenshot",)})
+        store.save(ann, group="cafe-a" if i < 2 else "cafe-b")
+    assert "No evaluated runs" in real_report({}, {}, "real-test", tmp_path)
+
+    op = {"auto_placed": 2, "risk": 0.0, "recall": 0.67, "box_off": 0.0}
+    metrics = {
+        "gt_prices": 3,
+        "pair": {"f1": 0.9},
+        "operating_point": op,
+        "cost": {"per_menu_usd": 0.004},
+        "slices": {"tag": {"photo": {"menus": 1, "gt_prices": 1, "pair": {"f1": 1.0}, "operating_point": op}}},
+        "per_menu": {m: {"gt": 1, "pair_tp": 1, "errors": 0} for m in ids},
+    }
+    synthetic = {**metrics, "pair": {"f1": 0.97}}
+    text = real_report(
+        {"second-opinion-claude-cal": (None, metrics)},  # type: ignore[dict-item]
+        {"second-opinion-claude-cal": (None, synthetic)},  # type: ignore[dict-item]
+        "real-test",
+        tmp_path,
+    )
+    assert "| 3 | 3 | 2 | 3 | 3 |" in text  # menus, pages, venues, items, prices
+    assert "| angled | 1 | 1 |" in text
+    assert "## Synthetic vs real" in text and "| 97.0 | 90.0 |" in text
+    assert "– (n=2)" in text  # two auto-placed prices are too few for a rate
+    assert "| cafe-a | 2 | 2 | 100.0 | 0 |" in text
