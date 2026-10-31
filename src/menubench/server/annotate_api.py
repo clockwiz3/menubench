@@ -12,7 +12,7 @@ from pydantic import BaseModel, ValidationError
 from menubench.data.real import RealStore, Status, UploadError
 from menubench.llm import LLMClient, LLMError, ResponseCache
 from menubench.pipeline.base import MenuInput, StageLog
-from menubench.pipeline.prelabel import prediction_to_draft
+from menubench.pipeline.prelabel import locate_names, prediction_to_draft
 from menubench.pipeline.runner import RunConfig, build_pipeline, load_pages_from
 from menubench.schema import CatalogEntry, MenuAnnotation, MenuItem, PriceAnnotation
 
@@ -159,12 +159,16 @@ async def prelabel_menu(store: RealStore, menu_id: str, config_path: Path) -> No
     client.source = "prelabel"
     try:
         pipeline = build_pipeline(cfg, client)
-        prediction = await pipeline.process(MenuInput(menu_id, load_pages_from(store.root, base)), StageLog())
+        pages = load_pages_from(store.root, base)
+        prediction = await pipeline.process(MenuInput(menu_id, pages), StageLog())
+        located = (
+            await locate_names(client, pipeline.models["vlm"], pages, prediction) if "vlm" in pipeline.models else {}
+        )
     finally:
         await client.aclose()
         cache.close()
     store.save(
-        prediction_to_draft(base, prediction),
+        prediction_to_draft(base, prediction, located),
         status=Status.PRELABELED,
         prelabel_config=str(config_path),
         prelabeled_at=datetime.now(UTC),

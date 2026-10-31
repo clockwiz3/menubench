@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
+from PIL import Image
+
 from menubench.eval.text import cer, normalize
+from menubench.llm import parse_json, prompt
+from menubench.llm.boxes import box_prompt, from_bbox, raw_box, to_bbox
+from menubench.llm.client import ImagePart, LLMClient
+from menubench.llm.models import ModelSpec
 from menubench.schema import BBox, MenuAnnotation, MenuItem, MenuPrediction, PriceAnnotation, PriceKind, TextLine
 
 # OCR models sometimes pair a line's text with a neighbour's box, most often on angled photos. A box whose width
@@ -81,8 +87,8 @@ def _fit(line: TextLine, price: BBox, lines: tuple[TextLine, ...], prices: list[
     return box
 
 
-def _name_box(name: str, price: BBox, page: int, lines: tuple[TextLine, ...], prices: list[BBox] | None = None) -> BBox:
-    """The OCR line that reads like the name and sits nearest to the price; a placeholder box otherwise."""
+def _ocr_name_box(name: str, price: BBox, page: int, lines: tuple[TextLine, ...], prices: list[BBox]) -> BBox | None:
+    """The OCR line that reads like the name and sits nearest to the price, made believable."""
     target = normalize(name)
     hits = [
         ln
@@ -93,25 +99,97 @@ def _name_box(name: str, price: BBox, page: int, lines: tuple[TextLine, ...], pr
     if hits:
         cy = (price.y0 + price.y1) / 2
         line = min(hits, key=lambda ln: abs((ln.bbox.y0 + ln.bbox.y1) / 2 - cy) + abs(ln.bbox.x1 - price.x0) * 0.3)
-        return _fit(line, price, lines, prices or [])
+        return _fit(line, price, lines, prices)
+    return None
+
+
+def _name_box(name: str, price: BBox, page: int, lines: tuple[TextLine, ...], prices: list[BBox] | None = None) -> BBox:
+    """The OCR line for the name; a placeholder box left of the price when OCR did not read it."""
+    found = _ocr_name_box(name, price, page, lines, prices or [])
+    if found is not None:
+        return found
     width = 0.25
     x0 = max(0.0, price.x0 - width - 0.01)
     return BBox(x0=x0, y0=price.y0, x1=max(x0 + 0.01, price.x0 - 0.01), y1=price.y1)
 
 
-def prediction_to_draft(base: MenuAnnotation, prediction: MenuPrediction) -> MenuAnnotation:
+# Below this overlap the OCR box and the reader's box point at different places; the reader's one wins then.
+AGREE_IOU = 0.3
+
+
+def _pick(ocr: BBox | None, located: BBox | None, price: BBox) -> BBox | None:
+    """The OCR box is tighter when both agree; the reader sees the photo as a whole, so it wins a disagreement."""
+    if located is None:
+        return ocr
+    if ocr is not None and ocr.iou(located) >= AGREE_IOU:
+        return ocr
+    if _same_row(located, price) and located.x0 < price.x0 - 0.01 < located.x1:
+        return _box(located.x0, located.y0, price.x0 - GAP, located.y1)
+    return located
+
+
+async def locate_names(
+    client: LLMClient, spec: ModelSpec, pages: list[Image.Image], prediction: MenuPrediction
+) -> dict[int, BBox]:
+    """Asks the reader model where each predicted price's name is printed, one call per page.
+
+    OCR models pair a line's text with a neighbour's box on tilted photos; the reader placed the prices on the same
+    photo well, so it is asked for the names too. Keys are indexes into `prediction.prices`."""
+    text, version = prompt("name_boxes")
+    found: dict[int, BBox] = {}
+    for page_no, image in enumerate(pages):
+        wanted = [(i, p) for i, p in enumerate(prediction.prices) if p.page == page_no and p.name and p.bbox]
+        if not wanted:
+            continue
+        part = ImagePart.from_image(image, max_side=spec.max_image_side)
+        key, box_spec = box_prompt(spec.box_format, part.width, part.height)
+        listing = "\n".join(
+            f"{n}. {p.name} (price {p.text or p.value}, price box "
+            f"{from_bbox(p.bbox, spec.box_format, part.width, part.height)})"
+            for n, (_, p) in enumerate(wanted, start=1)
+            if p.bbox is not None
+        )
+        response = await client.complete(
+            spec.id,
+            text.replace("{{BOX_KEY}}", key).replace("{{BOX_SPEC}}", box_spec).replace("{{ITEMS}}", listing),
+            images=[part],
+            prompt_version=version,
+            fallback_models=spec.fallback,
+            max_tokens=4000,
+        )
+        data = parse_json(response.text)
+        entries = data.get("names", []) if isinstance(data, dict) else data
+        for entry in entries if isinstance(entries, list) else []:
+            if not isinstance(entry, dict):
+                continue
+            try:
+                n = int(entry.get("n", 0))
+            except (TypeError, ValueError):
+                continue
+            box = to_bbox(raw_box(entry) or [], spec.box_format, part.width, part.height)
+            if box is not None and 1 <= n <= len(wanted):
+                found[wanted[n - 1][0]] = box
+    return found
+
+
+def prediction_to_draft(
+    base: MenuAnnotation, prediction: MenuPrediction, located: dict[int, BBox] | None = None
+) -> MenuAnnotation:
     items: list[MenuItem] = []
     prices: list[PriceAnnotation] = []
     price_boxes: dict[int, list[BBox]] = {}
     for p in prediction.prices:
         if p.bbox is not None:
             price_boxes.setdefault(p.page, []).append(p.bbox)
+    located = located or {}
     for n, p in enumerate(prediction.prices, start=1):
         if p.bbox is None:
             continue
         item_ids: tuple[str, ...] = ()
         if p.name:
-            box = _name_box(p.name, p.bbox, p.page, prediction.lines, price_boxes.get(p.page, []))
+            page_prices = price_boxes.get(p.page, [])
+            ocr = _ocr_name_box(p.name, p.bbox, p.page, prediction.lines, page_prices)
+            box = _pick(ocr, located.get(n - 1), p.bbox) or _name_box(p.name, p.bbox, p.page, (), page_prices)
             # Same name and the same place is one item with several prices; the same name elsewhere on the page
             # (a second column, a translated half) is its own item.
             same = next(

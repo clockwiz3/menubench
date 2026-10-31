@@ -59,6 +59,15 @@ def to_bbox(raw: Sequence[float], fmt: BoxFormat, width: int, height: int) -> BB
     return BBox(x0=x0, y0=y0, x1=x1, y1=y1)
 
 
+def from_bbox(box: BBox, fmt: BoxFormat, width: int, height: int) -> list[int]:
+    """The inverse of `to_bbox`: a page-relative box in the model's own convention, for prompts that show boxes."""
+    if fmt is BoxFormat.YXYX1000:
+        return [round(box.y0 * 1000), round(box.x0 * 1000), round(box.y1 * 1000), round(box.x1 * 1000)]
+    if fmt is BoxFormat.PIXELS:
+        return [round(box.x0 * width), round(box.y0 * height), round(box.x1 * width), round(box.y1 * height)]
+    return [round(box.x0 * 1000), round(box.y0 * 1000), round(box.x1 * 1000), round(box.y1 * 1000)]
+
+
 def to_tile(box: BBox, tile: BBox) -> BBox:
     """Maps a box relative to a tile back to the full page."""
     w, h = tile.x1 - tile.x0, tile.y1 - tile.y0

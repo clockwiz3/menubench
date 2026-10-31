@@ -100,3 +100,15 @@ def test_lone_size_variant_becomes_a_single_price() -> None:
         PriceKind.SIZE_VARIANT,
         PriceKind.SIZE_VARIANT,
     ]
+
+
+def test_reader_box_wins_when_ocr_points_elsewhere() -> None:
+    name = "Svježe kamenice (12 komada)"
+    price_box = box(0.79, 0.14, 0.88, 0.155)
+    ocr_box = text_box(name, 0.1, 0.18)  # OCR gave the line below, as on a tilted photo
+    reader_box = box(0.1, 0.145, 0.38, 0.16)
+    pred = MenuPrediction(menu_id="m", config="c", prices=(price(50, price_box, name),), lines=(line(name, ocr_box),))
+    assert prediction_to_draft(BASE, pred, {0: reader_box}).items[0].bbox == reader_box
+    # When both agree, the OCR box stays: it is cut to the printed text.
+    close = box(0.1, 0.178, 0.36, 0.196)
+    assert prediction_to_draft(BASE, pred, {0: close}).items[0].bbox == ocr_box
