@@ -72,6 +72,27 @@ Latency of `second-opinion-claude-cal` was measured on cached calls; live, it is
 | `qwen/qwen3-vl-8b-instruct` | 98.2 | 74.9 | 66.7 | 0.44 | 0.047 | 0.0017 | 35.8 | 60 |
 | `anthropic/claude-haiku-5.5` | 98.4 | 67.2 | 68.9 | 0.59 | 0.066 | 0.0014 | 9.9 | 60 |
 
+### Straightening tilted pages (synthetic dev only)
+
+Tilted photos were the weak spot of v0.2: rows slope, the reader and the verifier pair names and prices across
+rows, and the verifier's up-and-left crop reads the row above. `params.deskew` estimates the tilt from the page
+itself (the angle at which the rows of ink give the sharpest horizontal profile), turns the page level before
+any model sees it, and maps the boxes back onto the original photo. Level pages are not touched. Measured on
+synthetic **dev** with the same calibrator and threshold as v0.2 (`ablation-deskew` vs `second-opinion-claude-cal`,
+103 menus; 59 pages were turned):
+
+| slice | pair F1 % | auto-placed % | wrong among auto-placed % |
+|---|---|---|---|
+| all | 91.1 → **95.4** | 80.2 → **86.7** | 0.97 → **0.23** |
+| augment = photo (up to ±4.5°) | 76.0 → **89.7** | 62.0 → **71.8** | 3.91 → **0.87** |
+| augment = scan (up to ±1.8°) | 98.3 → 98.5 | 85.8 → **94.6** | 0 → 0 |
+| clean | 97.4 → 97.4 | 92.0 → 92.0 | 0 → 0 |
+
+AURC drops from 0.0076 to 0.0023, "box off the price" among auto-placed from 1.5% to 1.1%, and the cost per menu
+does not grow (one model call per page either way; the straightening itself takes ~0.07 s on a CPU). The test
+split has not been run with it yet: that is a new frozen version, v0.3. On the real photos tagged `angled` the
+estimate finds 1–3.6°; screenshots come out at 0°.
+
 ## What it measures
 
 - **Track A — extraction.** Image or PDF in, `{price, currency, item, box, confidence}` out. Matching is one-to-one
@@ -140,8 +161,8 @@ confidence → auto-place or review → strict linking for trusted prices only.
 
 ## What I would do next
 
-- Rotation-aware crops for the verifier: on tilted photos its up-and-left crop reads the name from the row
-  above, so it disagrees with a correct reader and sends good prices to review (safe, but costs automation).
+- Run v0.3 (v0.2 + straightening) on the test split once and move the headline to it; then perspective
+  correction, which straightening by rotation does not undo.
 - Real photos: re-check the v0.2 operating point, and compare the verifier signal with the reader's own confidence.
 - A cheaper verifier: the full v0.1 pipeline is more than a second opinion needs.
 - Calibrate on data that matches deployment (real photos), add image-quality features (blur, perspective) and a

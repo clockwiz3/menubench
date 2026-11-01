@@ -57,7 +57,12 @@ def build_pipeline(cfg: RunConfig, client: LLMClient) -> Pipeline:
         cls = pipelines()[cfg.pipeline]
     except KeyError:
         raise ValueError(f"unknown pipeline {cfg.pipeline!r}; known: {', '.join(pipelines())}") from None
-    return cls(client, cfg.models, cfg.params)
+    pipeline = cls(client, cfg.models, cfg.params)
+    if cfg.params.get("deskew", False):
+        from menubench.pipeline.deskewed import Deskewed
+
+        return Deskewed(pipeline)
+    return pipeline
 
 
 def load_pages(dataset: Dataset, annotation: MenuAnnotation) -> list[Image.Image]:

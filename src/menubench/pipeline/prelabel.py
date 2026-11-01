@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from PIL import Image
 
+from menubench.detect.deskew import straighten
 from menubench.eval.text import cer, normalize
 from menubench.llm import parse_json, prompt
 from menubench.llm.boxes import box_prompt, from_bbox, raw_box, to_bbox
@@ -129,23 +130,27 @@ def _pick(ocr: BBox | None, located: BBox | None, price: BBox) -> BBox | None:
 
 
 async def locate_names(
-    client: LLMClient, spec: ModelSpec, pages: list[Image.Image], prediction: MenuPrediction
+    client: LLMClient, spec: ModelSpec, pages: list[Image.Image], prediction: MenuPrediction, deskew: bool = False
 ) -> dict[int, BBox]:
     """Asks the reader model where each predicted price's name is printed, one call per page.
 
     OCR models pair a line's text with a neighbour's box on tilted photos; the reader placed the prices on the same
-    photo well, so it is asked for the names too. Keys are indexes into `prediction.prices`."""
+    photo well, so it is asked for the names too. Keys are indexes into `prediction.prices`. With `deskew`, the model
+    sees the straightened page and its boxes come back onto the original photo."""
     text, version = prompt("name_boxes")
     found: dict[int, BBox] = {}
     for page_no, image in enumerate(pages):
         wanted = [(i, p) for i, p in enumerate(prediction.prices) if p.page == page_no and p.name and p.bbox]
         if not wanted:
             continue
+        turn = None
+        if deskew:
+            image, turn = straighten(image)
         part = ImagePart.from_image(image, max_side=spec.max_image_side)
         key, box_spec = box_prompt(spec.box_format, part.width, part.height)
         listing = "\n".join(
             f"{n}. {p.name} (price {p.text or p.value}, price box "
-            f"{from_bbox(p.bbox, spec.box_format, part.width, part.height)})"
+            f"{from_bbox(turn.to_straight(p.bbox) if turn else p.bbox, spec.box_format, part.width, part.height)})"
             for n, (_, p) in enumerate(wanted, start=1)
             if p.bbox is not None
         )
@@ -168,7 +173,7 @@ async def locate_names(
                 continue
             box = to_bbox(raw_box(entry) or [], spec.box_format, part.width, part.height)
             if box is not None and 1 <= n <= len(wanted):
-                found[wanted[n - 1][0]] = box
+                found[wanted[n - 1][0]] = turn.to_original(box) if turn else box
     return found
 
 

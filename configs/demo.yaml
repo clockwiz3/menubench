@@ -15,3 +15,4 @@ params:
   calibrator: configs/calibration/second-opinion-claude.json
   target_risk: 0.01
   refine_boxes: true
+  deskew: true  # straighten tilted photos before reading; boxes are mapped back onto the original

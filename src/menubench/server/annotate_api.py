@@ -175,7 +175,9 @@ async def prelabel_menu(store: RealStore, menu_id: str, config_path: Path) -> No
         pages = load_pages_from(store.root, base)
         prediction = await pipeline.process(MenuInput(menu_id, pages), StageLog())
         located = (
-            await locate_names(client, pipeline.models["vlm"], pages, prediction) if "vlm" in pipeline.models else {}
+            await locate_names(client, pipeline.models["vlm"], pages, prediction, deskew=bool(cfg.params.get("deskew")))
+            if "vlm" in pipeline.models
+            else {}
         )
     finally:
         await client.aclose()
